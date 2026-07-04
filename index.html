@@ -1,0 +1,3020 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>KeyAI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { display: none; }
+  html, body { height: 100%; }
+
+  /* ── THEME TOKENS ── */
+  :root {
+    --bg:       #0F172A;
+    --bg2:      #1E293B;
+    --bg3:      #243044;
+    --border:   #334155;
+    --text:     #FFFFFF;
+    --muted:    #94A3B8;
+    --faint:    #8A99AC;
+    --accent:   #3B82F6;
+    --accent2:  #60A5FA;
+    --accent-btn: #2F6FE0;
+    --accent-rgb: 59,130,246;
+    --green:    #10B981;
+    --green-rgb: 16,185,129;
+    --orange:   #F59E0B;
+    --orange-rgb: 245,158,11;
+    --red:      #FB7185;
+    --red-rgb: 244,63,94;
+  }
+  [data-theme="light"] {
+    --bg:       #F8FAFC;
+    --bg2:      #EFF4F9;
+    --bg3:      #E2E8F0;
+    --border:   #E2E8F0;
+    --text:     #1E293B;
+    --muted:    #475569;
+    --faint:    #566377;
+    --accent:   #2563EB;
+    --accent2:  #2563EB;
+    --accent-btn: #2563EB;
+    --accent-rgb: 37,99,235;
+    --green:    #047857;
+    --green-rgb: 16,185,129;
+    --orange:   #B45309;
+    --orange-rgb: 217,119,6;
+    --red:      #C81E55;
+    --red-rgb: 225,29,72;
+  }
+
+  body {
+    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background .3s, color .3s;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  textarea, input { font-family: inherit; }
+
+  /* ── MICROINTERACCIONES MD3 (elevación suave) ── */
+  .tab, .hdr-btn, .hdr-btn-lang, .car-btn, .file-zone,
+  .btn-copy, .btn-replace, .btn-humanize, .btn-danger,
+  .modal-btn-primary, .modal-btn-secondary, .apikey-status-dot {
+    transition: transform .25s ease, box-shadow .25s ease, background .25s ease, border-color .25s ease, color .25s ease;
+  }
+  .tab:hover, .hdr-btn:hover, .hdr-btn-lang:hover, .car-btn:hover, .file-zone:hover,
+  .btn-copy:hover, .btn-replace:hover, .btn-humanize:hover,
+  .modal-btn-primary:hover, .modal-btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15,23,42,.10);
+  }
+  [data-theme="dark"] .tab:hover, [data-theme="dark"] .hdr-btn:hover, [data-theme="dark"] .hdr-btn-lang:hover,
+  [data-theme="dark"] .car-btn:hover, [data-theme="dark"] .file-zone:hover,
+  [data-theme="dark"] .btn-copy:hover, [data-theme="dark"] .btn-replace:hover, [data-theme="dark"] .btn-humanize:hover,
+  [data-theme="dark"] .modal-btn-primary:hover, [data-theme="dark"] .modal-btn-secondary:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+  .tab:active, .hdr-btn:active, .car-btn:active, .btn-copy:active, .btn-replace:active,
+  .btn-humanize:active, .modal-btn-primary:active, .modal-btn-secondary:active {
+    transform: translateY(0); box-shadow: none;
+  }
+  .card, .file-zone, .result-card, .error-card {
+    box-shadow: 0 1px 3px rgba(15,23,42,.06);
+  }
+  [data-theme="dark"] .card, [data-theme="dark"] .file-zone,
+  [data-theme="dark"] .result-card, [data-theme="dark"] .error-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+
+  /* HEADER */
+  #header {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px 10px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 8px; }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg,#2563EB,#10B981);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px;
+  }
+  .logo-text { font-weight: 700; font-size: 19px; letter-spacing: -0.5px; color: var(--text); }
+  .logo-text span { color: var(--accent2); }
+  .hdr-btns { display: flex; gap: 6px; align-items: center; }
+  .hdr-btn {
+    background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    transition: background .25s, border-color .25s;
+  }
+  .hdr-btn:hover { border-color: var(--accent); }
+  .hdr-btn-lang {
+    background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+    padding: 0 10px; height: 36px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .hdr-btn-lang span { font-size: 11px; color: var(--muted); }
+
+  /* TABS */
+  #tabs {
+    flex-shrink: 0; display: flex; gap: 4px;
+    padding: 10px 16px 6px; overflow-x: auto; scrollbar-width: none;
+    background: var(--bg);
+  }
+  .tab {
+    flex-shrink: 0; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--border); background: var(--bg2); color: var(--muted); transition: all .25s;
+  }
+  .tab.active { background: var(--accent-btn); border-color: var(--accent-btn); color: #fff; }
+
+  /* VIEWS */
+  .view { display: none; flex: 1; overflow-y: auto; padding: 12px 16px; flex-direction: column; gap: 12px; background: var(--bg); }
+  .view.active { display: flex; }
+  .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+
+  /* FILE ZONE */
+  .file-zone {
+    border: 2px dashed var(--border); border-radius: 14px; padding: 18px 14px;
+    text-align: center; cursor: pointer; transition: all .3s; position: relative;
+  }
+  .file-zone.hover { border-color: var(--accent); background: rgba(var(--accent-rgb),0.07); }
+  .file-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .file-icon { font-size: 24px; margin-bottom: 6px; }
+  .file-text { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .file-sub { font-size: 11px; color: var(--faint); margin-top: 3px; }
+
+  .file-attached {
+    background: var(--bg3); border: 1.5px solid var(--green); border-radius: 14px;
+    padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .file-attached-info { flex: 1; min-width: 0; }
+  .file-attached-name { font-size: 13px; font-weight: 600; color: var(--green); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-attached-meta { font-size: 11px; color: var(--faint); margin-top: 2px; }
+  .file-remove { background: none; border: none; color: var(--faint); font-size: 18px; padding: 2px; flex-shrink: 0; }
+
+  /* INPUT CARD */
+  .input-card {
+    background: var(--bg2); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px;
+    transition: border-color .25s;
+  }
+  .input-card.focused { border-color: var(--accent); }
+  .input-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--faint); margin-bottom: 8px; }
+  .input-card textarea {
+    width: 100%; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 15px; line-height: 1.55; resize: none; min-height: 85px;
+  }
+  .input-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+  }
+  .char-count { font-size: 11px; color: var(--faint); }
+
+  /* BUTTONS */
+  .btn-quick-reply {
+    padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid var(--accent); background: transparent; color: var(--accent2);
+    white-space: nowrap;
+  }
+  .btn-danger {
+    padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--red); background: transparent; color: var(--red);
+  }
+  .btn-back {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    border: 1px solid var(--border); background: var(--bg2); color: var(--muted);
+  }
+
+  /* SECTION TITLE */
+  .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--faint); margin-bottom: 2px; }
+
+  /* PROMPTS GRID */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .prompt-card {
+    background: var(--bg2); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 11px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+    transition: all .25s;
+  }
+  .prompt-card:hover { border-color: var(--accent); background: var(--bg3); }
+  .prompt-emoji { font-size: 18px; }
+  .prompt-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .prompt-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* LOADING */
+  .loading-card {
+    background: var(--bg2); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  .loading-label { font-size: 13px; color: var(--muted); text-align: center; }
+  .loading-sub { font-size: 11px; color: var(--faint); text-align: center; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ERROR */
+  .error-card { background: rgba(var(--red-rgb),.06); border: 1.5px solid var(--red); border-radius: 14px; padding: 14px; }
+  .error-title { color: var(--red); font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+  .error-sub { font-size: 13px; color: var(--muted); }
+
+  /* RESULT */
+  .result-card {
+    background: linear-gradient(135deg,rgba(var(--accent-rgb),.08),rgba(var(--accent-rgb),.04));
+    border: 1.5px solid var(--accent); border-radius: 14px; padding: 14px;
+  }
+  .result-label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--accent2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+  .result-text { font-size: 14px; line-height: 1.65; color: var(--text); white-space: pre-wrap; }
+  .result-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-copy { flex: 1; padding: 9px; border-radius: 12px; font-size: 13px; font-weight: 600; border: none; background: var(--accent-btn); color: #fff; }
+  .btn-replace { flex: 1; padding: 9px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--accent); background: transparent; color: var(--accent2); }
+  .btn-humanize { flex: 1; padding: 9px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--green); background: transparent; color: var(--green); transition: background .25s; }
+  .btn-humanize:hover { background: rgba(var(--green-rgb),0.1); }
+
+  /* MASTER ANALYSIS CARD */
+  .master-analysis-card {
+    background: linear-gradient(135deg,rgba(var(--accent-rgb),.06),rgba(var(--green-rgb),.06));
+    border: 1.5px solid rgba(var(--green-rgb),0.5); border-radius: 14px;
+    padding: 14px; margin-top: 10px;
+  }
+  .master-analysis-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; color: var(--green);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .master-analysis-list { display: flex; flex-direction: column; gap: 8px; }
+  .master-analysis-item {
+    font-size: 14px; line-height: 1.55; color: var(--text);
+    background: rgba(var(--green-rgb),0.06); border: 1px solid rgba(var(--green-rgb),0.2);
+    border-radius: 10px; padding: 9px 12px;
+  }
+  .btn-copy-analysis {
+    margin-top: 10px; width: 100%; padding: 9px; border-radius: 12px;
+    font-size: 13px; font-weight: 600; border: 1.5px solid var(--green);
+    background: transparent; color: var(--green); transition: background .25s;
+    font-family: inherit;
+  }
+  .btn-copy-analysis:hover { background: rgba(var(--green-rgb),0.1); }
+
+  /* DOC ANALYSIS */
+  .car-card {
+    background: linear-gradient(135deg,rgba(var(--orange-rgb),.08),rgba(var(--accent-rgb),.06));
+    border: 1.5px solid var(--orange); border-radius: 14px; padding: 14px;
+  }
+  .car-title { font-size: 14px; font-weight: 700; color: var(--orange); margin-left: 8px; }
+  .car-sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+  .car-btn {
+    background: var(--bg2); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 10px; text-align: center; cursor: pointer; transition: border-color .25s;
+  }
+  .car-btn:hover { border-color: var(--orange); }
+  .car-btn-master { grid-column: 1/-1; border: 1.5px solid var(--accent); background: rgba(var(--accent-rgb),0.1); }
+  .car-btn-master:hover { border-color: var(--accent2); }
+
+  /* HISTORY */
+  .hist-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; }
+  .hist-item:hover { border-color: var(--accent); }
+  .hist-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .hist-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: rgba(var(--accent-rgb),0.2); color: var(--accent2); }
+  .hist-time { font-size: 10px; color: var(--faint); }
+  .hist-preview { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+  /* EMPTY STATE */
+  .empty-state { display: flex; flex-direction: column; align-items: center; padding: 30px 20px; text-align: center; gap: 10px; color: var(--faint); }
+
+  /* SETTINGS */
+  .settings-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 0; }
+  .settings-section { padding: 16px 0; border-bottom: 1px solid var(--border); }
+  .settings-section:first-child { padding-top: 4px; }
+  .settings-section:last-child { border-bottom: none; padding-bottom: 4px; }
+  .settings-label { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .settings-tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .stag {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--bg3); color: var(--muted);
+    cursor: pointer; transition: all .25s;
+  }
+  .stag.active {
+    border-color: var(--orange); background: transparent; color: var(--text); font-weight: 600;
+  }
+
+  /* PROFILE SECTION */
+  .profile-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg,#2563EB,#10B981);
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    flex-shrink: 0;
+  }
+  .profile-info { flex: 1; min-width: 0; }
+  .profile-name-display { font-size: 16px; font-weight: 700; color: var(--text); }
+  .profile-gender-display { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .profile-name-input {
+    width: 100%; background: var(--bg3); border: 1.5px solid var(--border);
+    border-radius: 14px; color: var(--text); font-size: 15px;
+    padding: 11px 14px; outline: none; font-family: inherit;
+    margin-bottom: 10px;
+  }
+  .profile-name-input:focus { border-color: var(--accent); }
+  .profile-gender-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+  .profile-gender-btn {
+    flex: 1; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--border); background: var(--bg3); color: var(--muted);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .25s;
+  }
+  .profile-gender-btn.active {
+    border-color: var(--orange); background: rgba(var(--orange-rgb),0.1); color: var(--text);
+  }
+  .btn-save-profile {
+    width: 100%; padding: 11px; border-radius: 14px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--accent); background: transparent; color: var(--accent2);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+
+  /* APIKEY SECTION */
+  .apikey-field-wrap { position: relative; margin-bottom: 10px; }
+  .apikey-field {
+    width: 100%; background: var(--bg3); border: 1.5px solid var(--border); border-radius: 14px;
+    color: var(--text); font-size: 14px; padding: 11px 44px 11px 14px; outline: none;
+  }
+  .apikey-field:focus { border-color: var(--accent); }
+  .apikey-eye {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; font-size: 18px; color: var(--muted); cursor: pointer; padding: 0;
+  }
+  .apikey-status-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--faint); margin-bottom: 12px; }
+  .apikey-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex-shrink: 0; }
+  .apikey-status-dot.has-key { background: var(--green); }
+  .apikey-btns { display: flex; gap: 8px; }
+  .btn-save-key {
+    flex: 1; padding: 10px; border-radius: 14px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--green); background: transparent; color: var(--green);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-del-key {
+    flex: 1; padding: 10px; border-radius: 14px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--red); background: transparent; color: var(--red);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .apikey-info-box {
+    background: var(--bg3); border-radius: 14px; padding: 12px 14px;
+    margin-top: 12px; font-size: 12px; line-height: 1.6; color: var(--muted);
+  }
+  .apikey-info-box strong { color: var(--text); }
+  .apikey-info-box a { color: var(--orange); text-decoration: none; }
+  .privacy-box {
+    background: var(--bg3); border-radius: 12px; padding: 14px;
+    font-size: 13px; line-height: 1.6; color: var(--muted);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .privacy-box strong { color: var(--text); }
+
+  /* MODAL */
+  #lang-modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 100;
+    align-items: flex-end;
+  }
+  #lang-modal.open { display: flex; }
+  .modal-box {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0;
+    padding: 20px; width: 100%; display: flex; flex-direction: column; gap: 12px;
+  }
+  .modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .modal-sub { font-size: 13px; color: var(--muted); }
+  .modal-input {
+    background: var(--bg3); border: 1.5px solid var(--border); border-radius: 14px;
+    color: var(--text); font-size: 15px; padding: 10px 14px; outline: none;
+    font-family: inherit; width: 100%;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; }
+  .modal-btn-primary { flex: 1; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 600; border: none; background: var(--accent-btn); color: #fff; }
+  .modal-btn-secondary { flex: 1; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 600; border: 1px solid var(--border); background: var(--bg3); color: var(--muted); }
+
+  /* LANG DROPDOWN MODAL */
+  #ui-lang-modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 100;
+    align-items: flex-end;
+  }
+  #ui-lang-modal.open { display: flex; }
+  #ui-lang-modal .modal-box { max-height: 80dvh; display: flex; flex-direction: column; }
+  #ui-lang-list { overflow-y: auto; flex: 1; min-height: 0; -webkit-overflow-scrolling: touch; }
+
+  /* TOAST */
+  #toast {
+    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,.5); white-space: nowrap;
+  }
+  #toast.visible { display: block; }
+
+  /* TONE QUICK-ACCESS STRIP */
+  .tone-strip {
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    padding: 2px 0 4px; -webkit-overflow-scrolling: touch;
+  }
+  .tone-strip::-webkit-scrollbar { display: none; }
+  .tone-chip {
+    flex-shrink: 0; padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--bg2); color: var(--muted);
+    cursor: pointer; white-space: nowrap;
+    transition: transform .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
+  }
+  .tone-chip:hover { border-color: var(--accent); color: var(--text); transform: translateY(-1px); }
+  .tone-chip.active { border-color: var(--accent); background: rgba(var(--accent-rgb),.15); color: var(--accent2); font-weight: 600; }
+
+  /* TONE MODAL */
+  #tone-modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 100;
+    align-items: flex-end;
+  }
+  #tone-modal.open { display: flex; }
+  #tone-modal .modal-box { max-height: 75dvh; overflow-y: auto; }
+  .tone-modal-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .tone-modal-btn {
+    background: var(--bg3); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 11px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 3px;
+    text-align: left; transition: all .2s;
+  }
+  .tone-modal-btn:hover, .tone-modal-btn.active { border-color: var(--accent); background: rgba(var(--accent-rgb),.12); }
+  .tone-modal-btn.active { border-color: var(--accent2); }
+  .tone-modal-emoji { font-size: 18px; }
+  .tone-modal-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .tone-modal-desc { font-size: 10px; color: var(--muted); line-height: 1.3; }
+  .btn-tone-apply {
+    width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700;
+    border: none; background: var(--accent-btn); color: #fff; margin-top: 4px;
+    transition: opacity .2s;
+  }
+  .btn-tone-apply:disabled { opacity: .4; cursor: default; }
+  /* Inline tone rewrite button on result */
+  .btn-tone {
+    flex: 1; padding: 9px; border-radius: 12px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--orange); background: transparent; color: var(--orange);
+    transition: background .25s, transform .25s, box-shadow .25s;
+  }
+  .btn-tone:hover { background: rgba(var(--orange-rgb),.1); transform: translateY(-2px); }
+
+  /* ── SEARCH BAR ── */
+  .search-wrap {
+    position: relative;
+  }
+  .search-input-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg2); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 9px 12px;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .search-input-row:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12);
+  }
+  .search-icon { font-size: 15px; flex-shrink: 0; color: var(--faint); pointer-events: none; }
+  .search-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 14px; font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--faint); }
+  .search-clear {
+    background: none; border: none; color: var(--faint); font-size: 16px;
+    padding: 0; line-height: 1; cursor: pointer; flex-shrink: 0;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .search-clear.visible { opacity: 1; pointer-events: auto; }
+
+  /* Search Results Panel */
+  .search-results-panel {
+    display: none; flex-direction: column; gap: 8px;
+    margin-top: 8px;
+    animation: srFadeIn .18s ease;
+  }
+  .search-results-panel.visible { display: flex; }
+  @keyframes srFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Matched cards grid */
+  .search-matched-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .search-match-card {
+    background: var(--bg2); border: 1.5px solid var(--accent);
+    border-radius: 14px; padding: 11px 12px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: all .2s;
+    animation: srFadeIn .22s ease;
+  }
+  .search-match-card:hover {
+    background: var(--bg3); transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(var(--accent-rgb),.18);
+  }
+  .search-match-card .prompt-emoji { font-size: 18px; }
+  .search-match-card .prompt-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .search-match-card .prompt-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .search-match-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+    color: var(--accent2); margin-bottom: 2px;
+  }
+
+  /* No-results + recommendations */
+  .search-no-results {
+    background: var(--bg2); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 14px 14px 10px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .search-no-msg {
+    font-size: 12px; color: var(--muted); line-height: 1.55;
+  }
+  .search-no-msg strong { color: var(--text); font-weight: 600; }
+  .search-rec-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--faint);
+  }
+  .search-rec-list { display: flex; flex-direction: column; gap: 6px; }
+  .search-rec-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--bg3); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 10px 12px; cursor: pointer;
+    transition: border-color .2s, transform .2s;
+  }
+  .search-rec-item:hover {
+    border-color: var(--accent); transform: translateX(3px);
+  }
+  .search-rec-emoji { font-size: 20px; flex-shrink: 0; line-height: 1; }
+  .search-rec-info { flex: 1; min-width: 0; }
+  .search-rec-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .search-rec-desc { font-size: 11px; color: var(--muted); margin-top: 1px; line-height: 1.35; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo-wrap">
+    <div class="logo-icon">⌨️</div>
+    <div class="logo-text">Key<span>AI</span></div>
+  </div>
+  <div class="hdr-btns">
+    <button class="hdr-btn" id="btn-theme" title="Tema">☀️</button>
+    <button class="hdr-btn" id="btn-history" title="Historial">🕐</button>
+    <button class="hdr-btn" id="btn-settings" title="Configuración">⚙️</button>
+    <button class="hdr-btn-lang" id="btn-ui-lang">🌐 <span id="ui-lang-label">Auto</span> ▾</button>
+  </div>
+</header>
+
+<!-- TABS -->
+<div id="tabs"></div>
+
+<!-- ══════════════════ MAIN VIEW ══════════════════ -->
+<div id="view-main" class="view active">
+
+  <div id="file-zone" class="file-zone">
+    <input type="file" id="file-input" accept=".pdf,image/*" />
+    <div class="file-icon">📎</div>
+    <div class="file-text">Adjuntar ficha técnica, cotización o documento</div>
+    <div class="file-sub">PDF · JPG · PNG · WEBP</div>
+  </div>
+  <div id="file-attached" style="display:none" class="file-attached">
+    <span id="file-attached-icon" style="font-size:24px">📄</span>
+    <div class="file-attached-info">
+      <div class="file-attached-name" id="file-attached-name"></div>
+      <div class="file-attached-meta" id="file-attached-meta"></div>
+    </div>
+    <button class="file-remove" id="btn-file-remove">✕</button>
+  </div>
+
+  <div class="input-card" id="input-card">
+    <div class="input-label" id="input-label">Tu texto</div>
+    <textarea id="text-input" rows="3" placeholder="Escribe, pega texto, o sube un archivo..."></textarea>
+    <div class="input-footer">
+      <span class="char-count" id="char-count">0 caracteres</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn-quick-reply" id="btn-quick-reply">💬 Responder</button>
+        <button class="btn-danger" id="btn-clear">🗑 Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TONE QUICK-ACCESS STRIP -->
+  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:10px 12px;">
+    <div class="input-label" style="margin-bottom:7px">🎨 Accesos rápidos de tono</div>
+    <div class="tone-strip" id="tone-strip"></div>
+  </div>
+
+  <div class="loading-card" id="loading-card" style="display:none">
+    <div class="spinner"></div>
+    <div class="loading-label" id="loading-label-text"></div>
+    <div class="loading-sub">Procesando con IA…</div>
+  </div>
+
+  <div class="error-card" id="error-card" style="display:none">
+    <div class="error-title" id="error-title"></div>
+    <div class="error-sub">Intenta de nuevo.</div>
+  </div>
+
+  <div class="result-card" id="result-card" style="display:none">
+    <div class="result-label"><div class="dot"></div><span id="result-label-text"></span></div>
+    <div class="result-text" id="result-text"></div>
+    <div class="result-actions">
+      <button class="btn-copy" id="btn-copy">📋 Copiar</button>
+      <button class="btn-replace" id="btn-redo">🔁 Rehacer</button>
+      <button class="btn-replace" id="btn-replace">⬆️ Usar como entrada</button>
+    </div>
+    <div class="result-actions" style="margin-top:6px">
+      <button class="btn-humanize" id="btn-humanize">🫀 Humanizar resultado</button>
+      <button class="btn-tone" id="btn-tone-result">🎨 Cambiar tono</button>
+    </div>
+  </div>
+
+  <div class="car-card" id="doc-panel" style="display:none">
+    <div style="display:flex;align-items:center;margin-bottom:8px">
+      <span style="font-size:22px">📎</span>
+      <span class="car-title">Analizar Documento con IA</span>
+    </div>
+    <div class="car-sub">La IA leerá tu archivo y generará el contenido automáticamente.</div>
+    <div class="grid" id="doc-grid">
+      <div class="car-btn" data-doc="ventajas"><div style="font-size:20px;margin-bottom:4px">💎</div><div style="font-size:12px;font-weight:600;color:var(--text)">Ventajas y Beneficios</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Lista completa para vender</div></div>
+      <div class="car-btn" data-doc="pitch"><div style="font-size:20px;margin-bottom:4px">🎯</div><div style="font-size:12px;font-weight:600;color:var(--text)">Pitch de Venta</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Argumento irresistible</div></div>
+      <div class="car-btn" data-doc="whatsapp"><div style="font-size:20px;margin-bottom:4px">💬</div><div style="font-size:12px;font-weight:600;color:var(--text)">Mensaje WhatsApp</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Listo para enviar</div></div>
+      <div class="car-btn" data-doc="social"><div style="font-size:20px;margin-bottom:4px">📱</div><div style="font-size:12px;font-weight:600;color:var(--text)">Post para Redes</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Instagram · Facebook</div></div>
+      <div class="car-btn" data-doc="objeciones"><div style="font-size:20px;margin-bottom:4px">🛡️</div><div style="font-size:12px;font-weight:600;color:var(--text)">Manejo de Objeciones</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Respuestas a las dudas</div></div>
+      <div class="car-btn" data-doc="resumen"><div style="font-size:20px;margin-bottom:4px">📋</div><div style="font-size:12px;font-weight:600;color:var(--text)">Ficha Comercial</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Resumen ejecutivo</div></div>
+      <div class="car-btn car-btn-master" data-doc="master"><div style="font-size:20px;margin-bottom:4px">🚀</div><div style="font-size:12px;font-weight:600;color:var(--accent2)">MASTER — Todo en uno</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Pitch + Beneficios + Objeciones + Post + WhatsApp</div></div>
+    </div>
+  </div>
+
+  <div id="search-section" class="search-wrap">
+    <div class="search-input-row">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="quick-search" type="text" placeholder="Buscar acción o tono…" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button class="search-clear" id="search-clear-btn" title="Limpiar">✕</button>
+    </div>
+    <div class="search-results-panel" id="search-results-panel"></div>
+  </div>
+
+  <div id="prompts-section">
+    <div class="section-title">Acciones rápidas</div>
+    <div class="grid" id="prompts-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ HISTORY VIEW ══════════════════ -->
+<div id="view-history" class="view">
+  <div class="page-header">
+    <button class="btn-back" id="btn-history-back">← Volver</button>
+    <span class="section-title">Historial</span>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<!-- ══════════════════ SETTINGS VIEW ══════════════════ -->
+<div id="view-settings" class="view">
+  <div class="page-header">
+    <button class="btn-back" id="btn-settings-back">← Volver</button>
+    <span class="section-title" style="font-size:13px;letter-spacing:2px">CONFIGURACIÓN</span>
+  </div>
+
+  <!-- Perfil de usuario -->
+  <div class="settings-card" style="margin-bottom:0">
+    <div class="settings-section" style="border-bottom:none;padding-bottom:4px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div class="profile-avatar" id="profile-avatar">🙋</div>
+        <div class="profile-info">
+          <div class="profile-name-display" id="profile-name-display">Tu Perfil</div>
+          <div class="profile-gender-display" id="profile-gender-display">Sin configurar</div>
+        </div>
+      </div>
+      <div class="input-label" id="profile-name-label">TU NOMBRE <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(opcional)</span></div>
+      <input class="profile-name-input" id="profile-name-input" type="text" placeholder="Ej: Eduardo" maxlength="40" autocomplete="off" />
+      <div class="input-label" id="profile-gender-label" style="margin-bottom:8px">GÉNERO</div>
+      <div class="profile-gender-btns">
+        <button class="profile-gender-btn" data-gender="male" id="profile-btn-male">🧑 Masculino</button>
+        <button class="profile-gender-btn" data-gender="female" id="profile-btn-female">👩 Femenino</button>
+      </div>
+      <button class="btn-save-profile" id="btn-save-profile">💾 Guardar perfil</button>
+    </div>
+  </div>
+
+  <!-- Idioma de respuesta -->
+  <div class="settings-card">
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="outputLang">Idioma de respuesta</div>
+      <div class="settings-tag-row" id="lang-btns">
+        <button class="stag active" data-lang="auto">✨ Auto</button>
+        <button class="stag" data-lang="es">🇪🇸 Español</button>
+        <button class="stag" data-lang="en">🇺🇸 English</button>
+        <button class="stag" data-lang="de">🇩🇪 Deutsch</button>
+        <button class="stag" data-lang="fr">🇫🇷 Français</button>
+        <button class="stag" data-lang="it">🇮🇹 Italiano</button>
+        <button class="stag" data-lang="pt">🇧🇷 Português</button>
+        <button class="stag" data-lang="zh">🇨🇳 中文</button>
+        <button class="stag" data-lang="ja">🇯🇵 日本語</button>
+        <button class="stag" data-lang="ko">🇰🇷 한국어</button>
+        <button class="stag stag-other" id="btn-lang-resp-other" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;margin-top:2px">
+          <span style="font-size:20px">🌐</span>
+          <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px">
+            <span style="font-size:13px;font-weight:700;color:var(--text)">Otro idioma</span>
+            <span id="lang-resp-other-hint" style="font-size:11px;color:var(--muted);font-weight:400">Especifica el idioma destino</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tema -->
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="theme">Tema</div>
+      <div class="settings-tag-row" id="theme-btns">
+        <button class="stag active" data-theme-val="dark">🌙 Oscuro</button>
+        <button class="stag" data-theme-val="light">☀️ Claro</button>
+      </div>
+    </div>
+
+    <!-- Tono -->
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="defaultTone">Tono por defecto</div>
+      <div class="settings-tag-row" id="tone-btns">
+        <button class="stag active" data-tone="neutral">Neutral</button>
+        <button class="stag" data-tone="formal">Formal</button>
+        <button class="stag" data-tone="casual">Casual</button>
+      </div>
+    </div>
+
+    <!-- API Key -->
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="apikeyLabel">🔑 API Key de Anthropic</div>
+      <div class="apikey-field-wrap">
+        <input class="apikey-field" id="apikey-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false" />
+        <button class="apikey-eye" id="btn-apikey-eye">👁</button>
+      </div>
+      <div class="apikey-status-row">
+        <div class="apikey-status-dot" id="apikey-dot"></div>
+        <span id="apikey-status-text">Sin clave — modo Claude.ai (usa tus tokens de cuenta)</span>
+      </div>
+      <div class="apikey-btns">
+        <button class="btn-save-key" id="btn-save-apikey">💾 Guardar clave</button>
+        <button class="btn-del-key" id="btn-del-apikey">🗑 Borrar clave</button>
+      </div>
+      <div class="apikey-info-box">
+        <strong id="apikey-info-title">¿Cuándo necesitas una API Key?</strong><br>
+        <span id="apikey-info-body">• <strong>Dentro de Claude.ai</strong> (este chat): <em>no necesitas nada</em>, la app usa tu cuenta y tokens automáticamente.<br>• <strong>Fuera de Claude.ai</strong> (archivo local, tu servidor, GitHub Pages): ingresa tu clave de <a href='https://console.anthropic.com/settings/keys' target='_blank'>console.anthropic.com</a>.<br><br>La clave se guarda solo en tu dispositivo y nunca se envía a ningún servidor ajeno.</span>
+      </div>
+    </div>
+
+    <!-- Privacidad -->
+    <div class="settings-section">
+      <div class="privacy-box">
+        <span style="font-size:20px">🔒</span>
+        <div id="privacy-text"><strong>Privacidad:</strong> Tu texto e imágenes se envían a Claude (Anthropic) para procesar. El historial se guarda solo en tu dispositivo.</div>
+      </div>
+    </div>
+
+    <!-- Borrar historial -->
+    <div class="settings-section" style="border-bottom:none">
+      <button class="btn-danger" id="btn-clear-history" style="font-size:13px;padding:10px 18px;border-radius:14px">🗑 Borrar historial</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSLATE MODAL (content language) -->
+<div id="lang-modal">
+  <div class="modal-box">
+    <div class="modal-title">🌐 Elegir idioma de traducción</div>
+    <div class="modal-sub">¿A qué idioma quieres traducir?</div>
+    <input class="modal-input" id="custom-lang-input" placeholder="Ej: alemán, japonés, árabe, coreano..." autocomplete="off" />
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" id="btn-lang-cancel">Cancelar</button>
+      <button class="modal-btn-primary" id="btn-lang-confirm">Traducir</button>
+    </div>
+  </div>
+</div>
+
+<!-- UI LANGUAGE MODAL -->
+<div id="ui-lang-modal">
+  <div class="modal-box">
+    <div class="modal-title">🌐 Idioma de interfaz</div>
+    <div class="modal-sub">Selecciona el idioma de la interfaz</div>
+    <div style="display:flex;flex-direction:column;gap:6px" id="ui-lang-list">
+      <button class="modal-btn-secondary" data-ui-lang="auto" style="text-align:left;padding:12px 16px">✨ Auto (detectar)</button>
+      <button class="modal-btn-secondary" data-ui-lang="es" style="text-align:left;padding:12px 16px">🇪🇸 Español</button>
+      <button class="modal-btn-secondary" data-ui-lang="en" style="text-align:left;padding:12px 16px">🇺🇸 English</button>
+      <button class="modal-btn-secondary" data-ui-lang="de" style="text-align:left;padding:12px 16px">🇩🇪 Deutsch</button>
+      <button class="modal-btn-secondary" data-ui-lang="fr" style="text-align:left;padding:12px 16px">🇫🇷 Français</button>
+      <button class="modal-btn-secondary" data-ui-lang="it" style="text-align:left;padding:12px 16px">🇮🇹 Italiano</button>
+      <button class="modal-btn-secondary" data-ui-lang="pt" style="text-align:left;padding:12px 16px">🇧🇷 Português</button>
+      <button class="modal-btn-secondary" data-ui-lang="zh" style="text-align:left;padding:12px 16px">🇨🇳 中文</button>
+      <button class="modal-btn-secondary" data-ui-lang="ja" style="text-align:left;padding:12px 16px">🇯🇵 日本語</button>
+      <button class="modal-btn-secondary" data-ui-lang="ko" style="text-align:left;padding:12px 16px">🇰🇷 한국어</button>
+      <button class="modal-btn-secondary" id="btn-ui-lang-other" style="text-align:left;padding:12px 16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">🌐</span>
+        <span style="display:flex;flex-direction:column;gap:1px">
+          <span style="font-size:13px;font-weight:700">Otro idioma</span>
+          <span style="font-size:11px;opacity:.7">Especifica el idioma destino</span>
+        </span>
+      </button>
+    </div>
+    <button class="modal-btn-secondary" id="btn-ui-lang-cancel" style="margin-top:4px">Cancelar</button>
+  </div>
+</div>
+
+<!-- RESPONSE LANG "OTHER" MODAL -->
+<div id="resp-lang-other-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:110;align-items:flex-end">
+  <div class="modal-box">
+    <div class="modal-title">🌐 Idioma de respuesta</div>
+    <div class="modal-sub">¿En qué idioma quieres que responda la IA?</div>
+    <input class="modal-input" id="resp-lang-other-input" placeholder="Ej: japonés, árabe, chino, coreano..." autocomplete="off" />
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" id="btn-resp-lang-other-cancel">Cancelar</button>
+      <button class="modal-btn-primary" id="btn-resp-lang-other-confirm">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- UI LANG "OTHER" MODAL -->
+<div id="ui-lang-other-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:110;align-items:flex-end">
+  <div class="modal-box">
+    <div class="modal-title">🌐 Idioma de interfaz</div>
+    <div class="modal-sub">¿En qué idioma quieres ver la interfaz?</div>
+    <input class="modal-input" id="ui-lang-other-input" placeholder="Ej: japonés, árabe, chino, coreano..." autocomplete="off" />
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" id="btn-ui-lang-other-cancel">Cancelar</button>
+      <button class="modal-btn-primary" id="btn-ui-lang-other-confirm">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TONE PICKER MODAL -->
+<div id="tone-modal">
+  <div class="modal-box">
+    <div class="modal-title">🎨 Cambiar tono</div>
+    <div class="modal-sub">Selecciona un tono para reescribir el texto conservando el significado original.</div>
+    <div class="tone-modal-grid" id="tone-modal-grid"></div>
+    <button class="btn-tone-apply" id="btn-tone-apply" disabled>Aplicar tono</button>
+    <button class="modal-btn-secondary" id="btn-tone-cancel" style="width:100%;margin-top:4px">Cancelar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const CATEGORIES = [
+  { id: "all",       label: "✨ Todo" },
+  { id: "master",    label: "🚀 MASTER" },
+  { id: "create",    label: "💡 Crear" },
+  { id: "improve",   label: "✍️ Escritura" },
+  { id: "work",      label: "💼 Trabajo" },
+  { id: "sales",     label: "🎯 Ventas" },
+  { id: "social",    label: "📱 Social" },
+  { id: "translate", label: "🌐 Traducir" },
+  { id: "chat",      label: "💬 Mensajes" },
+  { id: "tones",     label: "🎨 Tonos" },
+];
+
+// ─── TONE QUICK-ACCESS DATA ───────────────────────────────────────────────────
+// Todos los tonos viven también en PROMPTS con cat:"tones" para aparecer
+// en la pestaña 🎨 Tonos y en ✨ Todo. La tira de acceso rápido lee de aquí.
+const TONES = [
+  { id:"tone_humanize",      emoji:"🫀", name:"Humanizar",       desc:"Elimina tono de IA, hazlo auténtico",  instruction:"Reescribe este texto para que suene completamente humano, auténtico y natural. Elimina cualquier rasgo de texto generado por IA: evita frases genéricas, estructuras repetitivas, lenguaje robótico o excesivamente formal. Usa variaciones de ritmo, contracciones naturales, y un tono cercano como si lo escribiera una persona real. Mantén el mensaje y la intención original. Solo devuelve el texto humanizado:" },
+  { id:"tone_polite",        emoji:"🎩", name:"Cortés",          desc:"Formal, respetuoso y educado",         instruction:"Reescribe el siguiente texto con un tono cortés: formal, respetuoso, amable y educado, ideal para tratos comerciales o presentaciones. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_romantic",      emoji:"💕", name:"Romántico",       desc:"Cálido, emotivo y afectuoso",          instruction:"Reescribe el siguiente texto con un tono romántico: cálido, emotivo, afectuoso y expresivo, transmitiendo sentimientos profundos. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_conversacional",emoji:"☕", name:"Conversacional",  desc:"Tono de diálogo natural entre personas", instruction:"Reescribe el siguiente texto como si fuera una conversación real entre dos personas: usa preguntas naturales, respuestas cortas, pausas conversacionales ('mira', 'te cuento', 'la verdad es que...'), alterna entre afirmaciones y reflexiones como lo haría alguien al hablar en voz alta. Evita frases de ensayo o discurso. El resultado debe sonar como si estuvieras en una mesa tomando un café y contándoselo a alguien. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_empathetic",    emoji:"💙", name:"Empático",        desc:"Comprensivo, con apoyo emocional",     instruction:"Reescribe el siguiente texto con un tono empático: comprensivo, atento, validando emociones y transmitiendo apoyo y escucha activa. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_motivational",  emoji:"🚀", name:"Motivador",       desc:"Inspira, impulsa y da energía",        instruction:"Reescribe el siguiente texto con un tono motivador e inspirador: usa lenguaje que impulse a la acción, despierte energía y genere confianza en el lector. Evita el dramatismo vacío; que cada frase tenga peso y propósito. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_storytelling",  emoji:"📖", name:"Narración",    desc:"Narrativa con inicio, nudo y emoción", instruction:"Reescribe el siguiente texto como una historia corta y poderosa: construye un mini relato con contexto, tensión o reto, y una resolución. Usa detalles concretos, escenas visuales y voz activa para que el lector se sienta dentro de la historia. Conserva el mismo mensaje e información esencial. Solo devuelve el texto reescrito:" },
+  { id:"tone_minimal",       emoji:"🪨", name:"Minimalista",     desc:"Menos palabras, más impacto",          instruction:"Reescribe el siguiente texto eliminando todo lo que sobre: adverbios innecesarios, frases de relleno, repeticiones y adornos. Cada palabra debe ganar su lugar. El resultado debe ser directo, limpio y poderoso. Conserva el mismo mensaje e información esencial. Solo devuelve el texto reescrito:" },
+  { id:"tone_urgent",        emoji:"⏰", name:"Urgente",         desc:"Genera acción inmediata",              instruction:"Reescribe el siguiente texto con un tono urgente que invite a actuar de inmediato: usa frases cortas, tiempo limitado implícito o explícito, y lenguaje que transmita que esperar tiene un costo. Sin exagerar ni caer en alarmismo. Conserva el mismo mensaje e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_nostalgic",     emoji:"🌅", name:"Nostálgico",      desc:"Evoca recuerdos y emociones pasadas",  instruction:"Reescribe el siguiente texto con un tono nostálgico: evoca momentos pasados, sensaciones familiares y emociones que conectan con la memoria. Usa imágenes sensoriales, referencias al tiempo y un ritmo pausado y reflexivo. Conserva el mismo mensaje e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_funny",         emoji:"😂", name:"Gracioso",        desc:"Ligero, con humor e ingenio",          instruction:"Reescribe el siguiente texto con un tono gracioso y ligero, añadiendo toques de humor e ingenio para hacer la interacción más amena. No alteres el significado ni los datos originales. Solo devuelve el texto reescrito:" },
+  { id:"tone_poetic",        emoji:"🌸", name:"Poético",         desc:"Metáforas, ritmo y estética",          instruction:"Reescribe el siguiente texto con un lenguaje poético: cuida las palabras, usa metáforas, ritmo y expresión estética. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_sarcastic",     emoji:"😏", name:"Sarcástico",      desc:"Ironía, doble sentido y mordacidad",   instruction:"Reescribe el siguiente texto con un tono sarcástico: usa ironía, doble sentido y comentarios mordaces, siempre manteniendo coherencia con el contexto y sin insultos. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_angry",         emoji:"😤", name:"Enérgico",        desc:"Firme, directo, con desacuerdo",       instruction:"Reescribe el siguiente texto con un tono firme, enérgico y directo que exprese desacuerdo o molestia con claridad, sin insultos ni lenguaje ofensivo. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_flirty",        emoji:"😉", name:"Coqueto",         desc:"Juguetón, sutil y confiado",           instruction:"Reescribe el siguiente texto con un tono coqueto: juguetón, sutil, con confianza y toques de coqueteo, manteniendo siempre el respeto. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_witty",         emoji:"🧠", name:"Ingenioso",       desc:"Agudo, inteligente y con gracia",      instruction:"Reescribe el siguiente texto con un tono ingenioso: respuestas rápidas, agudas, inteligentes y con gracia natural. Conserva exactamente el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_enthusiastic",  emoji:"🤩", name:"Entusiasta",      desc:"Emocionado y lleno de energía",        instruction:"Reescribe el siguiente texto con un tono entusiasta, emocionado y lleno de energía positiva. Conserva el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_assertive",     emoji:"⚡", name:"Asertivo",        desc:"Directo, seguro y sin rodeos",         instruction:"Reescribe el siguiente texto con un tono asertivo: directo, seguro y claro, sin rodeos. Conserva el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_diplomatic",    emoji:"🕊️", name:"Diplomático",     desc:"Equilibrado y cuidadoso",              instruction:"Reescribe el siguiente texto con un tono diplomático, equilibrado y cuidadoso. Conserva el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_formal",        emoji:"👔", name:"Formal",          desc:"Profesional y serio",                  instruction:"Reescribe el siguiente texto con un tono formal y profesional. Conserva el mismo significado, datos e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_casual",        emoji:"😊", name:"Casual",          desc:"Amigable y relajado",                  instruction:"Reescribe el siguiente texto con un tono casual y amigable, como si le escribieras a un amigo: usa contracciones, frases cortas y un lenguaje cotidiano sin tecnicismos ni estructura rígida. Solo devuelve el texto reescrito:" },
+  { id:"tone_cooperative",   emoji:"🤲", name:"Cooperativo",     desc:"Colaborativo y de equipo",             instruction:"Reescribe el siguiente texto con un tono cooperativo y colaborativo que invite al trabajo en equipo. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_fluent",        emoji:"🌊", name:"Fluido",          desc:"Lectura suave y natural",              instruction:"Reescribe el siguiente texto para que fluya de manera suave, natural y fácil de leer. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_compassionate", emoji:"🤗", name:"Comprensivo",     desc:"Cálido y con calidez humana",          instruction:"Reescribe el siguiente texto con un tono comprensivo, cálido y lleno de empatía humana. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_confident",     emoji:"🦁", name:"Confiado",        desc:"Seguro y con autoridad",               instruction:"Reescribe el siguiente texto con un tono seguro y confiado que transmita autoridad y credibilidad. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_engaging",      emoji:"🔥", name:"Atractivo",       desc:"Interesante y que engancha",           instruction:"Reescribe el siguiente texto para que sea más atractivo e interesante, que enganche al lector desde el principio. Conserva el mismo significado e información. Solo devuelve el texto reescrito:" },
+  { id:"tone_versify",       emoji:"🎶", name:"Versificar",       desc:"Convierte el texto en versos con rima", instruction:"Convierte el siguiente texto en versos con rima, manteniendo el significado y la información original. Usa un ritmo fluido y natural. Solo devuelve los versos:" },
+  { id:"tone_poemify",       emoji:"📜", name:"Poemificar",       desc:"Transforma el texto en un poema",       instruction:"Transforma el siguiente texto en un poema expresivo y elaborado, con estética literaria, metáforas y lenguaje cuidado. Conserva el mensaje e información esencial. Solo devuelve el poema:" },
+];
+
+const PROMPTS = [
+  { id:"master_ai", cat:"master", emoji:"🚀", name:"MASTER — IA detecta etapa", desc:"Detecta automáticamente dónde estás en la venta", instruction:`__MASTER_AI__` },
+  { id:"idea_to_text", cat:"create", emoji:"💡", name:"Generar desde idea", desc:"Describe tu intención y la IA redacta el texto", instruction:"Eres un redactor experto. El usuario te va a compartir una idea, intención o contexto — NO un texto a corregir, sino una descripción de lo que quiere comunicar. Tu tarea es redactar el texto completo, listo para usar, a partir de esa idea. Adapta el formato, tono y extensión según lo que el usuario describa (mensaje, email, post, pitch, etc.). Solo devuelve el texto redactado, sin explicaciones previas. Idea del usuario:" },
+  { id:"improve",    cat:"improve", emoji:"✨", name:"Mejorar", desc:"Mejora gramática y estilo", instruction:"Mejora la gramática, el estilo y la claridad de este texto. Solo devuelve el texto mejorado, sin explicaciones:" },
+  { id:"shorter",    cat:"improve", emoji:"✂️", name:"Acortar", desc:"Más conciso, mismo mensaje", instruction:"Acorta este texto sin perder el mensaje esencial. Solo devuelve el texto:" },
+  { id:"expand",     cat:"improve", emoji:"📖", name:"Expandir", desc:"Agrega detalle y riqueza", instruction:"Expande este texto agregando más detalle y contexto. Solo devuelve el texto expandido:" },
+  { id:"rephrase",   cat:"improve", emoji:"🔄", name:"Reformular", desc:"Di lo mismo de otra forma", instruction:"Reformula con palabras diferentes conservando el significado. Solo devuelve el texto:" },
+  { id:"rewrite",    cat:"improve", emoji:"✍️", name:"Reescribir", desc:"Versión nueva, misma esencia", instruction:"Reescribe completamente este texto desde cero: nueva estructura, nuevas palabras, nuevo ritmo. Mantén la misma información e intención original pero que suene totalmente diferente, como si lo hubiera escrito otra persona. Evita conservar frases enteras del original. Solo devuelve el texto reescrito:" },
+  { id:"active_voice", cat:"improve", emoji:"⚡", name:"Voz Activa", desc:"Convierte pasiva → activa", instruction:"Convierte toda voz pasiva a voz activa. Solo devuelve el texto:" },
+  { id:"formal",     cat:"work", emoji:"👔", name:"Formalizar", desc:"Tono profesional y serio", instruction:"Reescribe con tono formal y profesional. Solo devuelve el texto:" },
+  { id:"email",      cat:"work", emoji:"📧", name:"Email profesional", desc:"Formato de email completo", instruction:"Convierte en email profesional con saludo, cuerpo y despedida. Solo devuelve el email:" },
+  { id:"summary",    cat:"work", emoji:"📋", name:"Resumir", desc:"Puntos clave en lista", instruction:"Resume los puntos más importantes en lista concisa con viñetas. Solo devuelve el resumen:" },
+  { id:"action",     cat:"work", emoji:"✅", name:"Puntos de acción", desc:"Extrae tareas y próximos pasos", instruction:"Extrae todos los puntos de acción y tareas. Lista numerada. Solo devuelve la lista:" },
+  { id:"pitch",      cat:"sales", emoji:"🎯", name:"Pitch de ventas", desc:"Propuesta irresistible y directa", instruction:"Convierte en pitch de ventas poderoso con beneficio principal, manejo de objeción y CTA. Solo devuelve el pitch:" },
+  { id:"cta",        cat:"sales", emoji:"⚡", name:"Llamado a acción", desc:"CTA que genera clics y ventas", instruction:"Crea 3 llamados a la acción potentes y urgentes. Cortos y directos. Solo devuelve los 3 CTAs numerados:" },
+  { id:"benefits",   cat:"sales", emoji:"💎", name:"Ventajas y Beneficios", desc:"Convierte specs en valor de venta", instruction:"Analiza este texto e identifica automáticamente el tipo de producto o activo. Genera lista completa de:\n🔹 VENTAJAS (características objetivas)\n🔹 BENEFICIOS PARA EL CLIENTE (qué gana emocionalmente)\n🔹 DIFERENCIADORES\nUsa lenguaje persuasivo. Solo devuelve la lista estructurada:" },
+  { id:"objections", cat:"sales", emoji:"🛡️", name:"Manejar objeciones", desc:"Responde dudas y resistencias", instruction:"Genera respuestas convincentes para las 3 objeciones más comunes. Empático y persuasivo. Solo devuelve las objeciones y respuestas:" },
+  { id:"ad_copy",    cat:"sales", emoji:"📢", name:"Copy para anuncio", desc:"Facebook / Instagram Ads", instruction:"Escribe copy persuasivo para anuncio. Titular impactante, beneficio claro y CTA. Máximo 150 palabras. Solo devuelve el copy:" },
+  { id:"followup",   cat:"sales", emoji:"🔔", name:"Follow-up", desc:"Mensaje de seguimiento efectivo", instruction:"Escribe mensaje de seguimiento profesional y no invasivo. Breve, con valor e invitación a responder. Solo devuelve el mensaje:" },
+  { id:"testimonial",cat:"sales", emoji:"⭐", name:"Testimonial", desc:"Convierte feedback en social proof", instruction:"Transforma en testimonial poderoso y creíble. Natural y específico. Solo devuelve el testimonial:" },
+  { id:"value_prop", cat:"sales", emoji:"🏆", name:"Propuesta de valor", desc:"¿Qué te hace único?", instruction:"Redacta propuesta de valor clara y diferenciadora en máximo 3 líneas. Solo devuelve la propuesta:" },
+  { id:"social_post",cat:"social", emoji:"📣", name:"Post social", desc:"LinkedIn, Instagram, etc.", instruction:"Convierte en post atractivo para redes sociales con emojis y hashtags relevantes. Solo devuelve el post:" },
+  { id:"tweet",      cat:"social", emoji:"🐦", name:"Tweet / X", desc:"Menos de 280 caracteres", instruction:"Convierte en tweet impactante de menos de 280 caracteres. Solo devuelve el tweet:" },
+  { id:"threads",    cat:"social", emoji:"🧵", name:"Threads", desc:"Optimizado para 500 caracteres", instruction:"Convierte en post para Threads. Máximo 500 caracteres. Tono conversacional y auténtico. Solo devuelve el post:" },
+  { id:"hook",       cat:"social", emoji:"🪝", name:"Hook viral", desc:"Primera línea que engancha", instruction:"Crea un hook viral irresistible que genere curiosidad. Solo devuelve el hook:" },
+  { id:"caption",    cat:"social", emoji:"🖼️", name:"Caption foto", desc:"Leyenda para imagen", instruction:"Escribe caption atractivo con emojis y hasta 5 hashtags. Solo devuelve el caption:" },
+  { id:"add_emojis", cat:"social", emoji:"😄", name:"+ Emojis", desc:"Agrega emojis estratégicos", instruction:"Agrega emojis de forma estratégica y natural a este texto para hacerlo más atractivo y expresivo en redes sociales. Colócalos donde refuercen el mensaje sin saturar. Solo devuelve el texto con emojis:" },
+  { id:"to_english", cat:"translate", emoji:"🇺🇸", name:"Al inglés", desc:"Traducción natural", instruction:"Traduce al inglés de manera natural y fluida. Solo devuelve la traducción:" },
+  { id:"to_spanish", cat:"translate", emoji:"🇪🇸", name:"Al español", desc:"Traducción natural", instruction:"Traduce al español de manera natural y fluida. Solo devuelve la traducción:" },
+  { id:"to_french",  cat:"translate", emoji:"🇫🇷", name:"Al francés", desc:"Traducción natural", instruction:"Traduce al francés de manera natural y fluida. Solo devuelve la traducción:" },
+  { id:"to_portuguese", cat:"translate", emoji:"🇧🇷", name:"Al portugués", desc:"Traducción natural", instruction:"Traduce al portugués de manera natural y fluida. Solo devuelve la traducción:" },
+  { id:"to_italian", cat:"translate", emoji:"🇮🇹", name:"Al italiano", desc:"Traducción natural", instruction:"Traduce al italiano de manera natural y fluida. Solo devuelve la traducción:" },
+  { id:"to_other",   cat:"translate", emoji:"🌐", name:"Otro idioma", desc:"Especifica el idioma destino", instruction:"CUSTOM" },
+  { id:"reply",      cat:"chat", emoji:"💬", name:"Responder", desc:"Redacta una respuesta", instruction:"Redacta una respuesta natural y apropiada a este mensaje. Solo devuelve la respuesta:" },
+  { id:"apologize",  cat:"chat", emoji:"🙏", name:"Disculparse", desc:"Redacta una disculpa sincera", instruction:"Redacta una disculpa sincera y apropiada. Solo devuelve la disculpa:" },
+  { id:"detailed",   cat:"chat", emoji:"🔍", name:"Detallado", desc:"Preciso con más contexto", instruction:"Reescribe el texto haciéndolo más detallado y preciso, añadiendo contexto relevante. Solo devuelve el texto:" },
+  // ── TONOS como prompts de cuadrícula (cat:"tones") ──────────────────────────
+  ...TONES.map(t => ({ id: t.id, cat: "tones", emoji: t.emoji, name: t.name, desc: t.desc, instruction: t.instruction })),
+];
+
+const DOC_PROMPTS = {
+  ventajas:   `Eres un experto en ventas y marketing. Analiza la información de este producto, servicio, activo o propiedad e identifica automáticamente su tipo. Genera una lista COMPLETA y PERSUASIVA:\n\n🔹 VENTAJAS (características objetivas destacables)\n🔹 BENEFICIOS PARA EL CLIENTE (qué gana quien lo adquiere)\n🔹 DIFERENCIADORES (por qué es mejor que alternativas)\n\nUsa lenguaje persuasivo y emocional. Información:`,
+  pitch:      `Eres un vendedor experto. Con esta información crea un pitch irresistible: apertura impactante, 3 beneficios clave, conexión emocional, manejo del precio y CTA urgente. Información:`,
+  whatsapp:   `Crea un mensaje de WhatsApp perfecto para enviar a un cliente interesado. Cálido, con los puntos más atractivos, emojis moderados y pregunta de cierre. Máximo 200 palabras. Información:`,
+  social:     `Crea un POST para Instagram/Facebook: hook que detenga el scroll, 3-4 ventajas con emojis, precio si disponible, CTA y 8-10 hashtags. Información:`,
+  objeciones: `Prepara respuestas poderosas para las 5 objeciones más comunes (precio, necesita pensarlo, prefiere otra opción, busca en otro lugar, duda técnica). Para cada una: reconoce, responde con valor y redirige. Información:`,
+  resumen:    `Crea una FICHA COMERCIAL ejecutiva: nombre/modelo, especificaciones clave, equipamiento destacado, precio si disponible, 5 razones para adquirirlo, perfil del comprador ideal. Formato limpio y profesional. Información:`,
+  master:     `Eres experto en ventas y marketing. Genera un PAQUETE COMPLETO DE VENTAS:\n\n🚀 PITCH DE VENTA\n\n💎 VENTAJAS Y BENEFICIOS\n\n🛡️ MANEJO DE OBJECIONES (top 3)\n\n💬 MENSAJE WHATSAPP\n\n📱 POST PARA REDES\n\nDetecta el tipo de producto automáticamente. Información:`,
+};
+
+const UI_LANG_LABELS = { auto:"Auto", es:"ES", en:"EN", de:"DE", fr:"FR", it:"IT", pt:"PT", zh:"ZH", ja:"JA", ko:"KO" };
+
+// ─── UI TRANSLATIONS ──────────────────────────────────────────────────────────
+const UI_STRINGS = {
+  es: {
+    categories: ["✨ Todo","🚀 MASTER","💡 Crear","✍️ Escritura","💼 Trabajo","🎯 Ventas","📱 Social","🌐 Traducir","💬 Mensajes","🎨 Tonos"],
+    inputLabel: "Tu texto",
+    inputLabelOpt: "Tu texto (opcional)",
+    placeholder: "Escribe, pega o dicta tu texto aquí…",
+    charUnit: "caracteres",
+    quickReply: "💬 Responder",
+    btnCopy: "📋 Copiar",
+    btnReplace: "⬆️ Usar como entrada",
+    btnHumanize: "🫀 Humanizar",
+    btnToneResult: "🎨 Cambiar tono",
+    settingsTitle: "CONFIGURACIÓN",
+    btnBack: "← Volver",
+    outputLang: "Idioma de respuesta",
+    theme: "Tema",
+    themeDark: "🌙 Oscuro",
+    themeLight: "☀️ Claro",
+    defaultTone: "Tono por defecto",
+    toneNeutral: "Neutral",
+    toneFormal: "Formal",
+    toneCasual: "Casual",
+    noHistory: "Aún no hay historial.",
+    fileReady: "Listo ✓",
+    fileRemoveTitle: "Quitar archivo",
+    btnRedo: "🔁 Rehacer",
+    btnClear: "🗑 Limpiar",
+    sectionTitle: "CONFIGURACIÓN",
+    sectionQuickActions: "Acciones rápidas",
+    toneStripLabel: "🎨 Accesos rápidos de tono",
+    fileZoneText: "Adjuntar ficha técnica, cotización o documento",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Tu Perfil",
+    profileUnconfigured: "Sin configurar",
+    profileNameLabel: "TU NOMBRE",
+    profileNameOptional: "(opcional)",
+    profileGenderLabel: "GÉNERO",
+    profileMale: "🧑 Masculino",
+    profileFemale: "👩 Femenino",
+    profileGenderMale: "Masculino",
+    profileGenderFemale: "Femenino",
+    profileGenderNone: "Género no configurado",
+    btnSaveProfile: "💾 Guardar perfil",
+    apikeyLabel: "🔑 API Key de Anthropic",
+    btnSaveKey: "💾 Guardar clave",
+    btnDelKey: "🗑 Borrar clave",
+    apikeyNoKey: "Sin clave — modo Claude.ai (usa tus tokens de cuenta)",
+    apikeyHasSaved: "Clave guardada",
+    apikeyInfoTitle: "¿Cuándo necesitas una API Key?",
+    apikeyInfo: "• <strong>Dentro de Claude.ai</strong> (este chat): <em>no necesitas nada</em>, la app usa tu cuenta y tokens automáticamente.<br>• <strong>Fuera de Claude.ai</strong> (archivo local, tu servidor, GitHub Pages): ingresa tu clave de <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>La clave se guarda solo en tu dispositivo y nunca se envía a ningún servidor ajeno.",
+    privacyText: "<strong>Privacidad:</strong> Tu texto e imágenes se envían a Claude (Anthropic) para procesar. El historial se guarda solo en tu dispositivo.",
+    btnClearHistory: "🗑 Borrar historial",
+    confirmClearHistory: "¿Borrar todo el historial?",
+    toastCleared: "🗑 Historial borrado",
+    toastCopied: "✅ ¡Copiado!",
+    toastLoaded: "⬆️ Cargado como entrada",
+    toastNoText: "✏️ Escribe o pega texto primero",
+    toastNoTextShort: "✏️ Escribe texto primero",
+    toastNoFile: "Adjunta un archivo primero",
+    toastApiKeyRequired: "✏️ Ingresa tu API key",
+    toastApiKeyInvalid: "❌ Key inválida (debe iniciar con sk-ant-)",
+    toastApiKeySaved: "✅ API key guardada",
+    toastApiKeyDeleted: "🗑 API key eliminada",
+    toastProfileSaved: "✅ Perfil guardado",
+    toastFilePdf: "✅ PDF listo",
+    toastFileImg: "✅ Imagen lista",
+    toastFileError: "❌ Usa PDF o imagen",
+    toastFileReadError: "❌ Error al leer el archivo",
+    toastHoldToCopy: "✋ Mantén presionado el resultado para copiar",
+    modalTranslateTitle: "🌐 Elegir idioma de traducción",
+    modalTranslateSub: "¿A qué idioma quieres traducir?",
+    modalTranslatePlaceholder: "Ej: alemán, japonés, árabe, coreano...",
+    modalTranslateCancel: "Cancelar",
+    modalTranslateConfirm: "Traducir",
+    modalUiLangTitle: "🌐 Idioma de interfaz",
+    modalUiLangSub: "Selecciona el idioma de la interfaz",
+    modalUiLangCancel: "Cancelar",
+    modalUiLangOther: "Otro idioma",
+    modalUiLangOtherSub: "Especifica el idioma destino",
+    modalRespLangTitle: "🌐 Idioma de respuesta",
+    modalRespLangSub: "¿En qué idioma quieres que responda la IA?",
+    modalRespLangPlaceholder: "Ej: japonés, árabe, chino, coreano...",
+    modalRespLangCancel: "Cancelar",
+    modalRespLangConfirm: "Aplicar",
+    modalToneTitle: "🎨 Cambiar tono",
+    modalToneSub: "Selecciona un tono para reescribir el texto conservando el significado original.",
+    modalToneApply: "Aplicar tono",
+    modalToneCancel: "Cancelar",
+    toneNames: ["Humanizar","Cortés","Romántico","Conversacional","Empático","Motivador","Narración","Minimalista","Urgente","Nostálgico","Gracioso","Poético","Sarcástico","Enérgico","Coqueto","Ingenioso","Entusiasta","Asertivo","Diplomático","Formal","Casual","Cooperativo","Fluido","Comprensivo","Confiado","Atractivo","Versificar","Poemificar"],
+    toneDescs: ["Elimina tono de IA, hazlo auténtico","Formal, respetuoso y educado","Cálido, emotivo y afectuoso","Tono de diálogo natural entre personas","Comprensivo, con apoyo emocional","Inspira, impulsa y da energía","Narrativa con inicio, nudo y emoción","Menos palabras, más impacto","Genera acción inmediata","Evoca recuerdos y emociones pasadas","Ligero, con humor e ingenio","Metáforas, ritmo y estética","Ironía, doble sentido y mordacidad","Firme, directo, con desacuerdo","Juguetón, sutil y confiado","Agudo, inteligente y con gracia","Emocionado y lleno de energía","Directo, seguro y sin rodeos","Equilibrado y cuidadoso","Profesional y serio","Amigable y relajado","Colaborativo y de equipo","Lectura suave y natural","Cálido y con calidez humana","Seguro y con autoridad","Interesante y que engancha","Convierte el texto en versos con rima","Transforma el texto en un poema"],
+    promptNames: {
+      master_ai:"MASTER — IA detecta etapa", idea_to_text:"Generar desde idea", humanize:"Humanizar", improve:"Mejorar", shorter:"Acortar", expand:"Expandir", rephrase:"Reformular", rewrite:"Reescribir", active_voice:"Voz Activa", formal:"Formalizar", email:"Email profesional", summary:"Resumir", action:"Puntos de acción", pitch:"Pitch de ventas", cta:"Llamado a acción", benefits:"Ventajas y Beneficios", objections:"Manejar objeciones", ad_copy:"Copy para anuncio", followup:"Follow-up", testimonial:"Testimonial", value_prop:"Propuesta de valor", social_post:"Post social", tweet:"Tweet / X", threads:"Threads", hook:"Hook viral", caption:"Caption foto", add_emojis:"+ Emojis", to_english:"Al inglés", to_spanish:"Al español", to_french:"Al francés", to_portuguese:"Al portugués", to_italian:"Al italiano", to_other:"Otro idioma", reply:"Responder", apologize:"Disculparse", detailed:"Detallado"
+    },
+    promptDescs: {
+      master_ai:"Detecta automáticamente dónde estás en la venta", idea_to_text:"Describe tu intención y la IA redacta el texto", humanize:"Elimina tono de IA, hazlo natural", improve:"Mejora gramática y estilo", shorter:"Más conciso, mismo mensaje", expand:"Agrega detalle y riqueza", rephrase:"Di lo mismo de otra forma", rewrite:"Versión nueva, misma esencia", active_voice:"Convierte pasiva → activa", formal:"Tono profesional y serio", email:"Formato de email completo", summary:"Puntos clave en lista", action:"Extrae tareas y próximos pasos", pitch:"Propuesta irresistible y directa", cta:"CTA que genera clics y ventas", benefits:"Convierte specs en valor de venta", objections:"Responde dudas y resistencias", ad_copy:"Facebook / Instagram Ads", followup:"Mensaje de seguimiento efectivo", testimonial:"Convierte feedback en social proof", value_prop:"¿Qué te hace único?", social_post:"LinkedIn, Instagram, etc.", tweet:"Menos de 280 caracteres", threads:"Optimizado para 500 caracteres", hook:"Primera línea que engancha", caption:"Leyenda para imagen", add_emojis:"Agrega emojis estratégicos", to_english:"Traducción natural", to_spanish:"Traducción natural", to_french:"Traducción natural", to_portuguese:"Traducción natural", to_italian:"Traducción natural", to_other:"Especifica el idioma destino", reply:"Redacta una respuesta", apologize:"Redacta una disculpa sincera", detailed:"Preciso con más contexto"
+    },
+  },
+  en: {
+    categories: ["✨ All","🚀 MASTER","💡 Create","✍️ Writing","💼 Work","🎯 Sales","📱 Social","🌐 Translate","💬 Messages","🎨 Tones"],
+    inputLabel: "Your text",
+    inputLabelOpt: "Your text (optional)",
+    placeholder: "Type, paste or dictate your text here…",
+    charUnit: "characters",
+    quickReply: "💬 Reply",
+    btnCopy: "📋 Copy",
+    btnReplace: "⬆️ Use as input",
+    btnHumanize: "🫀 Humanize",
+    btnToneResult: "🎨 Change tone",
+    settingsTitle: "SETTINGS",
+    btnBack: "← Back",
+    outputLang: "Output language",
+    theme: "Theme",
+    themeDark: "🌙 Dark",
+    themeLight: "☀️ Light",
+    defaultTone: "Default tone",
+    toneNeutral: "Neutral",
+    toneFormal: "Formal",
+    toneCasual: "Casual",
+    noHistory: "No history yet.",
+    fileReady: "Ready ✓",
+    btnRedo: "🔁 Redo",
+    btnClear: "🗑 Clear",
+    sectionTitle: "SETTINGS",
+    sectionQuickActions: "Quick actions",
+    toneStripLabel: "🎨 Tone quick access",
+    fileZoneText: "Attach spec sheet, quote or document",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Your Profile",
+    profileUnconfigured: "Not set",
+    profileNameLabel: "YOUR NAME",
+    profileNameOptional: "(optional)",
+    profileGenderLabel: "GENDER",
+    profileMale: "🧑 Male",
+    profileFemale: "👩 Female",
+    profileGenderMale: "Male",
+    profileGenderFemale: "Female",
+    profileGenderNone: "Gender not set",
+    btnSaveProfile: "💾 Save profile",
+    apikeyLabel: "🔑 Anthropic API Key",
+    btnSaveKey: "💾 Save key",
+    btnDelKey: "🗑 Delete key",
+    apikeyNoKey: "No key — Claude.ai mode (uses your account tokens)",
+    apikeyHasSaved: "Key saved",
+    apikeyInfoTitle: "When do you need an API Key?",
+    apikeyInfo: "• <strong>Inside Claude.ai</strong> (this chat): <em>nothing needed</em>, the app uses your account and tokens automatically.<br>• <strong>Outside Claude.ai</strong> (local file, your server, GitHub Pages): enter your key from <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>The key is saved only on your device and never sent to any third-party server.",
+    privacyText: "<strong>Privacy:</strong> Your text and images are sent to Claude (Anthropic) for processing. History is saved only on your device.",
+    btnClearHistory: "🗑 Clear history",
+    confirmClearHistory: "Delete all history?",
+    toastCleared: "🗑 History cleared",
+    toastCopied: "✅ Copied!",
+    toastLoaded: "⬆️ Loaded as input",
+    toastNoText: "✏️ Write or paste text first",
+    toastNoTextShort: "✏️ Write text first",
+    toastNoFile: "Attach a file first",
+    toastApiKeyRequired: "✏️ Enter your API key",
+    toastApiKeyInvalid: "❌ Invalid key (must start with sk-ant-)",
+    toastApiKeySaved: "✅ API key saved",
+    toastApiKeyDeleted: "🗑 API key deleted",
+    toastProfileSaved: "✅ Profile saved",
+    toastFilePdf: "✅ PDF ready",
+    toastFileImg: "✅ Image ready",
+    toastFileError: "❌ Use PDF or image",
+    toastFileReadError: "❌ Error reading file",
+    toastHoldToCopy: "✋ Long press result to copy",
+    modalTranslateTitle: "🌐 Choose translation language",
+    modalTranslateSub: "Which language do you want to translate to?",
+    modalTranslatePlaceholder: "E.g.: German, Japanese, Arabic, Korean...",
+    modalTranslateCancel: "Cancel",
+    modalTranslateConfirm: "Translate",
+    modalUiLangTitle: "🌐 Interface language",
+    modalUiLangSub: "Select the interface language",
+    modalUiLangCancel: "Cancel",
+    modalUiLangOther: "Other language",
+    modalUiLangOtherSub: "Specify the target language",
+    modalRespLangTitle: "🌐 Output language",
+    modalRespLangSub: "In which language should the AI respond?",
+    modalRespLangPlaceholder: "E.g.: Japanese, Arabic, Chinese, Korean...",
+    modalRespLangCancel: "Cancel",
+    modalRespLangConfirm: "Apply",
+    modalToneTitle: "🎨 Change tone",
+    modalToneSub: "Select a tone to rewrite the text while preserving the original meaning.",
+    modalToneApply: "Apply tone",
+    modalToneCancel: "Cancel",
+    toneNames: ["Humanize","Polite","Romantic","Conversational","Empathetic","Motivational","Storytelling","Minimalist","Urgent","Nostalgic","Funny","Poetic","Sarcastic","Assertive","Flirty","Witty","Enthusiastic","Assertive","Diplomatic","Formal","Casual","Cooperative","Fluent","Compassionate","Confident","Engaging","Versify","Poemify"],
+    toneDescs: ["Remove AI tone, make it authentic","Formal, respectful and polite","Warm, emotional and affectionate","Natural dialogue tone","Empathetic, with emotional support","Inspire, motivate and energize","Narrative with beginning, middle and end","Fewer words, more impact","Drive immediate action","Evokes memories and past emotions","Light, with humor and wit","Metaphors, rhythm and aesthetics","Irony, double meaning and bite","Firm, direct, disagreement","Playful, subtle and confident","Sharp, intelligent and graceful","Excited and full of energy","Direct, confident and straight to the point","Balanced and careful","Professional and serious","Friendly and relaxed","Collaborative and teamwork","Smooth and natural reading","Warm and full of human warmth","Confident and authoritative","Interesting and engaging","Converts text to rhyming verses","Transforms text into a poem"],
+    promptNames: {
+      master_ai:"MASTER — AI detects stage", idea_to_text:"Generate from idea", humanize:"Humanize", improve:"Improve", shorter:"Shorten", expand:"Expand", rephrase:"Rephrase", rewrite:"Rewrite", active_voice:"Active Voice", formal:"Formalize", email:"Professional email", summary:"Summarize", action:"Action points", pitch:"Sales pitch", cta:"Call to action", benefits:"Benefits & Value", objections:"Handle objections", ad_copy:"Ad copy", followup:"Follow-up", testimonial:"Testimonial", value_prop:"Value proposition", social_post:"Social post", tweet:"Tweet / X", threads:"Threads", hook:"Viral hook", caption:"Photo caption", add_emojis:"+ Emojis", to_english:"To English", to_spanish:"To Spanish", to_french:"To French", to_portuguese:"To Portuguese", to_italian:"To Italian", to_other:"Other language", reply:"Reply", apologize:"Apologize", detailed:"Detailed"
+    },
+    promptDescs: {
+      master_ai:"Automatically detects your sales stage", idea_to_text:"Describe your intention and AI writes it", humanize:"Remove AI tone, make it natural", improve:"Improve grammar and style", shorter:"More concise, same message", expand:"Add detail and richness", rephrase:"Say the same thing differently", rewrite:"Fresh version, same essence", active_voice:"Convert passive → active", formal:"Professional and serious tone", email:"Full email format", summary:"Key points in a list", action:"Extract tasks and next steps", pitch:"Irresistible and direct proposal", cta:"CTA that drives clicks and sales", benefits:"Convert specs into sales value", objections:"Answer doubts and resistance", ad_copy:"Facebook / Instagram Ads", followup:"Effective follow-up message", testimonial:"Convert feedback into social proof", value_prop:"What makes you unique?", social_post:"LinkedIn, Instagram, etc.", tweet:"Less than 280 characters", threads:"Optimized for 500 characters", hook:"First line that hooks", caption:"Image caption", add_emojis:"Add strategic emojis", to_english:"Natural translation", to_spanish:"Natural translation", to_french:"Natural translation", to_portuguese:"Natural translation", to_italian:"Natural translation", to_other:"Specify the target language", reply:"Draft a reply", apologize:"Draft a sincere apology", detailed:"Precise with more context"
+    },
+  },
+  de: {
+    categories: ["✨ Alle","🚀 MASTER","💡 Erstellen","✍️ Schreiben","💼 Arbeit","🎯 Vertrieb","📱 Social","🌐 Übersetzen","💬 Nachrichten","🎨 Töne"],
+    inputLabel: "Ihr Text",
+    inputLabelOpt: "Ihr Text (optional)",
+    placeholder: "Text eingeben, einfügen oder diktieren…",
+    charUnit: "Zeichen",
+    quickReply: "💬 Antworten",
+    btnCopy: "📋 Kopieren",
+    btnReplace: "⬆️ Als Eingabe verwenden",
+    btnHumanize: "🫀 Humanisieren",
+    btnToneResult: "🎨 Ton ändern",
+    settingsTitle: "EINSTELLUNGEN",
+    btnBack: "← Zurück",
+    outputLang: "Ausgabesprache",
+    theme: "Design",
+    themeDark: "🌙 Dunkel",
+    themeLight: "☀️ Hell",
+    defaultTone: "Standardton",
+    toneNeutral: "Neutral",
+    toneFormal: "Formell",
+    toneCasual: "Lässig",
+    noHistory: "Noch kein Verlauf.",
+    fileReady: "Bereit ✓",
+    btnRedo: "🔁 Wiederholen",
+    btnClear: "🗑 Löschen",
+    sectionTitle: "EINSTELLUNGEN",
+    sectionQuickActions: "Schnellaktionen",
+    toneStripLabel: "🎨 Ton-Schnellzugriff",
+    fileZoneText: "Datenblatt, Angebot oder Dokument anhängen",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Ihr Profil",
+    profileUnconfigured: "Nicht konfiguriert",
+    profileNameLabel: "IHR NAME",
+    profileNameOptional: "(optional)",
+    profileGenderLabel: "GESCHLECHT",
+    profileMale: "🧑 Männlich",
+    profileFemale: "👩 Weiblich",
+    profileGenderMale: "Männlich",
+    profileGenderFemale: "Weiblich",
+    profileGenderNone: "Geschlecht nicht konfiguriert",
+    btnSaveProfile: "💾 Profil speichern",
+    apikeyLabel: "🔑 Anthropic API-Schlüssel",
+    btnSaveKey: "💾 Schlüssel speichern",
+    btnDelKey: "🗑 Schlüssel löschen",
+    apikeyNoKey: "Kein Schlüssel — Claude.ai-Modus (verwendet Ihre Konto-Token)",
+    apikeyHasSaved: "Schlüssel gespeichert",
+    apikeyInfoTitle: "Wann benötigen Sie einen API-Schlüssel?",
+    apikeyInfo: "• <strong>In Claude.ai</strong> (dieser Chat): <em>nichts nötig</em>, die App verwendet Ihr Konto automatisch.<br>• <strong>Außerhalb Claude.ai</strong> (lokale Datei, Ihr Server): Schlüssel von <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a> eingeben.<br><br>Der Schlüssel wird nur auf Ihrem Gerät gespeichert.",
+    privacyText: "<strong>Datenschutz:</strong> Ihr Text und Bilder werden zur Verarbeitung an Claude (Anthropic) gesendet. Der Verlauf wird nur auf Ihrem Gerät gespeichert.",
+    btnClearHistory: "🗑 Verlauf löschen",
+    confirmClearHistory: "Gesamten Verlauf löschen?",
+    toastCleared: "🗑 Verlauf gelöscht",
+    toastCopied: "✅ Kopiert!",
+    toastLoaded: "⬆️ Als Eingabe geladen",
+    toastNoText: "✏️ Zuerst Text schreiben oder einfügen",
+    toastNoTextShort: "✏️ Zuerst Text schreiben",
+    toastNoFile: "Zuerst eine Datei anhängen",
+    toastApiKeyRequired: "✏️ API-Schlüssel eingeben",
+    toastApiKeyInvalid: "❌ Ungültiger Schlüssel (muss mit sk-ant- beginnen)",
+    toastApiKeySaved: "✅ API-Schlüssel gespeichert",
+    toastApiKeyDeleted: "🗑 API-Schlüssel gelöscht",
+    toastProfileSaved: "✅ Profil gespeichert",
+    toastFilePdf: "✅ PDF bereit",
+    toastFileImg: "✅ Bild bereit",
+    toastFileError: "❌ Verwenden Sie PDF oder Bild",
+    toastFileReadError: "❌ Fehler beim Lesen der Datei",
+    toastHoldToCopy: "✋ Ergebnis gedrückt halten zum Kopieren",
+    modalTranslateTitle: "🌐 Übersetzungssprache wählen",
+    modalTranslateSub: "In welche Sprache möchten Sie übersetzen?",
+    modalTranslatePlaceholder: "Z.B.: Japanisch, Arabisch, Chinesisch...",
+    modalTranslateCancel: "Abbrechen",
+    modalTranslateConfirm: "Übersetzen",
+    modalUiLangTitle: "🌐 Oberflächensprache",
+    modalUiLangSub: "Oberflächensprache auswählen",
+    modalUiLangCancel: "Abbrechen",
+    modalUiLangOther: "Andere Sprache",
+    modalUiLangOtherSub: "Zielsprache angeben",
+    modalRespLangTitle: "🌐 Ausgabesprache",
+    modalRespLangSub: "In welcher Sprache soll die KI antworten?",
+    modalRespLangPlaceholder: "Z.B.: Japanisch, Arabisch, Chinesisch...",
+    modalRespLangCancel: "Abbrechen",
+    modalRespLangConfirm: "Anwenden",
+    modalToneTitle: "🎨 Ton ändern",
+    modalToneSub: "Ton auswählen, um den Text umzuschreiben und dabei den ursprünglichen Sinn zu erhalten.",
+    modalToneApply: "Ton anwenden",
+    modalToneCancel: "Abbrechen",
+    toneNames: ["Humanisieren","Höflich","Romantisch","Gesprächig","Einfühlsam","Motivierend","Erzählweise","Minimalistisch","Dringend","Nostalgisch","Witzig","Poetisch","Sarkastisch","Energisch","Flirty","Geistreich","Enthusiastisch","Bestimmt","Diplomatisch","Formell","Lässig","Kooperativ","Fließend","Mitfühlend","Selbstsicher","Ansprechend","Versifizieren","Gedicht machen"],
+    toneDescs: ["KI-Ton entfernen, authentisch machen","Formell, respektvoll und höflich","Warm, emotional und liebevoll","Natürlicher Dialogton","Einfühlsam, mit emotionaler Unterstützung","Inspirieren, motivieren und energetisieren","Erzählung mit Anfang, Mitte und Ende","Weniger Worte, mehr Wirkung","Sofortiges Handeln auslösen","Erinnerungen und vergangene Gefühle wecken","Leicht, mit Humor und Witz","Metaphern, Rhythmus und Ästhetik","Ironie, Doppeldeutigkeit und Schärfe","Fest, direkt, Meinungsverschiedenheit","Verspielt, subtil und selbstbewusst","Scharf, intelligent und anmutig","Aufgeregt und voller Energie","Direkt, sicher und geradeaus","Ausgewogen und vorsichtig","Professionell und seriös","Freundlich und entspannt","Kollaborativ und teamorientiert","Flüssiges und natürliches Lesen","Warm und voller menschlicher Wärme","Selbstbewusst und autoritär","Interessant und fesselnd","Text in Reimverse umwandeln","Text in ein Gedicht verwandeln"],
+    promptNames: {
+      master_ai:"MASTER — KI erkennt Phase", idea_to_text:"Aus Idee generieren", humanize:"Humanisieren", improve:"Verbessern", shorter:"Kürzen", expand:"Erweitern", rephrase:"Umformulieren", rewrite:"Neu schreiben", active_voice:"Aktive Stimme", formal:"Formalisieren", email:"Professionelle E-Mail", summary:"Zusammenfassen", action:"Aktionspunkte", pitch:"Verkaufspitch", cta:"Handlungsaufruf", benefits:"Vorteile & Nutzen", objections:"Einwände behandeln", ad_copy:"Anzeigentext", followup:"Nachfassen", testimonial:"Zeugnis", value_prop:"Wertversprechen", social_post:"Social Post", tweet:"Tweet / X", threads:"Threads", hook:"Viraler Hook", caption:"Bildunterschrift", add_emojis:"+ Emojis", to_english:"Ins Englische", to_spanish:"Ins Spanische", to_french:"Ins Französische", to_portuguese:"Ins Portugiesische", to_italian:"Ins Italienische", to_other:"Andere Sprache", reply:"Antworten", apologize:"Entschuldigen", detailed:"Detailliert"
+    },
+    promptDescs: {
+      master_ai:"Erkennt automatisch Ihre Verkaufsphase", idea_to_text:"Beschreiben Sie Ihre Absicht", humanize:"KI-Ton entfernen, natürlich machen", improve:"Grammatik und Stil verbessern", shorter:"Prägnanter, gleiche Aussage", expand:"Details und Tiefe hinzufügen", rephrase:"Dasselbe anders sagen", rewrite:"Neu schreiben, gleiche Essenz", active_voice:"Passiv → aktiv umwandeln", formal:"Professionell und ernst", email:"Vollständiges E-Mail-Format", summary:"Schlüsselpunkte als Liste", action:"Aufgaben und nächste Schritte", pitch:"Unwiderstehlicher Vorschlag", cta:"CTA der Klicks und Verkäufe generiert", benefits:"Specs in Verkaufswert umwandeln", objections:"Zweifel und Widerstände beantworten", ad_copy:"Facebook / Instagram Ads", followup:"Effektive Nachfassnachricht", testimonial:"Feedback in Social Proof verwandeln", value_prop:"Was macht Sie einzigartig?", social_post:"LinkedIn, Instagram usw.", tweet:"Weniger als 280 Zeichen", threads:"Optimiert für 500 Zeichen", hook:"Erste Zeile die fesselt", caption:"Bildlegende", add_emojis:"Strategische Emojis hinzufügen", to_english:"Natürliche Übersetzung", to_spanish:"Natürliche Übersetzung", to_french:"Natürliche Übersetzung", to_portuguese:"Natürliche Übersetzung", to_italian:"Natürliche Übersetzung", to_other:"Zielsprache angeben", reply:"Antwort verfassen", apologize:"Aufrichtige Entschuldigung verfassen", detailed:"Präzise mit mehr Kontext"
+    },
+  },
+  fr: {
+    categories: ["✨ Tout","🚀 MASTER","💡 Créer","✍️ Écriture","💼 Travail","🎯 Ventes","📱 Social","🌐 Traduire","💬 Messages","🎨 Tons"],
+    inputLabel: "Votre texte",
+    inputLabelOpt: "Votre texte (optionnel)",
+    placeholder: "Écrivez, collez ou dictez votre texte ici…",
+    charUnit: "caractères",
+    quickReply: "💬 Répondre",
+    btnCopy: "📋 Copier",
+    btnReplace: "⬆️ Utiliser comme entrée",
+    btnHumanize: "🫀 Humaniser",
+    btnToneResult: "🎨 Changer de ton",
+    settingsTitle: "PARAMÈTRES",
+    btnBack: "← Retour",
+    outputLang: "Langue de réponse",
+    theme: "Thème",
+    themeDark: "🌙 Sombre",
+    themeLight: "☀️ Clair",
+    defaultTone: "Ton par défaut",
+    toneNeutral: "Neutre",
+    toneFormal: "Formel",
+    toneCasual: "Décontracté",
+    noHistory: "Pas encore d'historique.",
+    fileReady: "Prêt ✓",
+    btnRedo: "🔁 Refaire",
+    btnClear: "🗑 Effacer",
+    sectionTitle: "PARAMÈTRES",
+    sectionQuickActions: "Actions rapides",
+    toneStripLabel: "🎨 Accès rapide aux tons",
+    fileZoneText: "Joindre fiche technique, devis ou document",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Votre Profil",
+    profileUnconfigured: "Non configuré",
+    profileNameLabel: "VOTRE NOM",
+    profileNameOptional: "(optionnel)",
+    profileGenderLabel: "GENRE",
+    profileMale: "🧑 Masculin",
+    profileFemale: "👩 Féminin",
+    profileGenderMale: "Masculin",
+    profileGenderFemale: "Féminin",
+    profileGenderNone: "Genre non configuré",
+    btnSaveProfile: "💾 Enregistrer le profil",
+    apikeyLabel: "🔑 Clé API Anthropic",
+    btnSaveKey: "💾 Enregistrer la clé",
+    btnDelKey: "🗑 Supprimer la clé",
+    apikeyNoKey: "Aucune clé — mode Claude.ai (utilise vos tokens de compte)",
+    apikeyHasSaved: "Clé enregistrée",
+    apikeyInfoTitle: "Quand avez-vous besoin d'une clé API ?",
+    apikeyInfo: "• <strong>Dans Claude.ai</strong> (ce chat) : <em>rien de nécessaire</em>, l'appli utilise votre compte automatiquement.<br>• <strong>En dehors de Claude.ai</strong> (fichier local, votre serveur) : entrez votre clé depuis <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>La clé est sauvegardée uniquement sur votre appareil.",
+    privacyText: "<strong>Confidentialité :</strong> Votre texte et vos images sont envoyés à Claude (Anthropic) pour traitement. L'historique est sauvegardé uniquement sur votre appareil.",
+    btnClearHistory: "🗑 Effacer l'historique",
+    confirmClearHistory: "Supprimer tout l'historique ?",
+    toastCleared: "🗑 Historique effacé",
+    toastCopied: "✅ Copié !",
+    toastLoaded: "⬆️ Chargé comme entrée",
+    toastNoText: "✏️ Écrivez ou collez du texte d'abord",
+    toastNoTextShort: "✏️ Écrivez du texte d'abord",
+    toastNoFile: "Joignez un fichier d'abord",
+    toastApiKeyRequired: "✏️ Entrez votre clé API",
+    toastApiKeyInvalid: "❌ Clé invalide (doit commencer par sk-ant-)",
+    toastApiKeySaved: "✅ Clé API enregistrée",
+    toastApiKeyDeleted: "🗑 Clé API supprimée",
+    toastProfileSaved: "✅ Profil enregistré",
+    toastFilePdf: "✅ PDF prêt",
+    toastFileImg: "✅ Image prête",
+    toastFileError: "❌ Utilisez un PDF ou une image",
+    toastFileReadError: "❌ Erreur lors de la lecture du fichier",
+    toastHoldToCopy: "✋ Maintenez le résultat appuyé pour copier",
+    modalTranslateTitle: "🌐 Choisir la langue de traduction",
+    modalTranslateSub: "Dans quelle langue voulez-vous traduire ?",
+    modalTranslatePlaceholder: "Ex : allemand, japonais, arabe, coréen...",
+    modalTranslateCancel: "Annuler",
+    modalTranslateConfirm: "Traduire",
+    modalUiLangTitle: "🌐 Langue de l'interface",
+    modalUiLangSub: "Sélectionnez la langue de l'interface",
+    modalUiLangCancel: "Annuler",
+    modalUiLangOther: "Autre langue",
+    modalUiLangOtherSub: "Précisez la langue cible",
+    modalRespLangTitle: "🌐 Langue de réponse",
+    modalRespLangSub: "Dans quelle langue souhaitez-vous que l'IA réponde ?",
+    modalRespLangPlaceholder: "Ex : japonais, arabe, chinois, coréen...",
+    modalRespLangCancel: "Annuler",
+    modalRespLangConfirm: "Appliquer",
+    modalToneTitle: "🎨 Changer de ton",
+    modalToneSub: "Sélectionnez un ton pour réécrire le texte en conservant le sens original.",
+    modalToneApply: "Appliquer le ton",
+    modalToneCancel: "Annuler",
+    toneNames: ["Humaniser","Poli","Romantique","Conversationnel","Empathique","Motivant","Narration","Minimaliste","Urgent","Nostalgique","Drôle","Poétique","Sarcastique","Énergique","Flirty","Spirituel","Enthousiaste","Assertif","Diplomatique","Formel","Décontracté","Coopératif","Fluide","Compatissant","Confiant","Engageant","Versifier","Poémifier"],
+    toneDescs: ["Supprimer le ton IA, le rendre authentique","Formel, respectueux et poli","Chaleureux, émotionnel et affectueux","Ton de dialogue naturel","Empathique, avec soutien émotionnel","Inspirer, motiver et dynamiser","Récit avec début, milieu et fin","Moins de mots, plus d'impact","Déclencher une action immédiate","Évoque des souvenirs et émotions passées","Léger, avec humour et esprit","Métaphores, rythme et esthétique","Ironie, double sens et mordant","Ferme, direct, désaccord","Joueur, subtil et confiant","Vif, intelligent et élégant","Excité et plein d'énergie","Direct, sûr et sans détour","Équilibré et prudent","Professionnel et sérieux","Amical et détendu","Collaboratif et esprit d'équipe","Lecture fluide et naturelle","Chaleureux et plein de chaleur humaine","Confiant et autoritaire","Intéressant et accrocheur","Convertit le texte en vers rimés","Transforme le texte en poème"],
+    promptNames: {
+      master_ai:"MASTER — IA détecte l'étape", idea_to_text:"Générer depuis une idée", humanize:"Humaniser", improve:"Améliorer", shorter:"Raccourcir", expand:"Développer", rephrase:"Reformuler", rewrite:"Réécrire", active_voice:"Voix active", formal:"Formaliser", email:"Email professionnel", summary:"Résumer", action:"Points d'action", pitch:"Argumentaire de vente", cta:"Appel à l'action", benefits:"Avantages et bénéfices", objections:"Gérer les objections", ad_copy:"Texte publicitaire", followup:"Suivi", testimonial:"Témoignage", value_prop:"Proposition de valeur", social_post:"Publication sociale", tweet:"Tweet / X", threads:"Threads", hook:"Accroche virale", caption:"Légende photo", add_emojis:"+ Emojis", to_english:"En anglais", to_spanish:"En espagnol", to_french:"En français", to_portuguese:"En portugais", to_italian:"En italien", to_other:"Autre langue", reply:"Répondre", apologize:"S'excuser", detailed:"Détaillé"
+    },
+    promptDescs: {
+      master_ai:"Détecte automatiquement votre étape de vente", idea_to_text:"Décrivez votre intention et l'IA rédige", humanize:"Supprimer le ton IA, le rendre naturel", improve:"Améliorer la grammaire et le style", shorter:"Plus concis, même message", expand:"Ajouter des détails et de la richesse", rephrase:"Dire la même chose différemment", rewrite:"Nouvelle version, même essence", active_voice:"Convertir passif → actif", formal:"Ton professionnel et sérieux", email:"Format email complet", summary:"Points clés en liste", action:"Extraire tâches et prochaines étapes", pitch:"Proposition irrésistible et directe", cta:"CTA qui génère des clics et des ventes", benefits:"Convertir les specs en valeur", objections:"Répondre aux doutes et résistances", ad_copy:"Facebook / Instagram Ads", followup:"Message de suivi efficace", testimonial:"Convertir le feedback en preuve sociale", value_prop:"Qu'est-ce qui vous rend unique?", social_post:"LinkedIn, Instagram, etc.", tweet:"Moins de 280 caractères", threads:"Optimisé pour 500 caractères", hook:"Première ligne qui accroche", caption:"Légende d'image", add_emojis:"Ajouter des emojis stratégiques", to_english:"Traduction naturelle", to_spanish:"Traduction naturelle", to_french:"Traduction naturelle", to_portuguese:"Traduction naturelle", to_italian:"Traduction naturelle", to_other:"Spécifiez la langue cible", reply:"Rédiger une réponse", apologize:"Rédiger des excuses sincères", detailed:"Précis avec plus de contexte"
+    },
+  },
+  pt: {
+    categories: ["✨ Tudo","🚀 MASTER","💡 Criar","✍️ Escrita","💼 Trabalho","🎯 Vendas","📱 Social","🌐 Traduzir","💬 Mensagens","🎨 Tons"],
+    inputLabel: "Seu texto",
+    inputLabelOpt: "Seu texto (opcional)",
+    placeholder: "Escreva, cole ou dite seu texto aqui…",
+    charUnit: "caracteres",
+    quickReply: "💬 Responder",
+    btnCopy: "📋 Copiar",
+    btnReplace: "⬆️ Usar como entrada",
+    btnHumanize: "🫀 Humanizar",
+    btnToneResult: "🎨 Mudar tom",
+    settingsTitle: "CONFIGURAÇÕES",
+    btnBack: "← Voltar",
+    outputLang: "Idioma de resposta",
+    theme: "Tema",
+    themeDark: "🌙 Escuro",
+    themeLight: "☀️ Claro",
+    defaultTone: "Tom padrão",
+    toneNeutral: "Neutro",
+    toneFormal: "Formal",
+    toneCasual: "Casual",
+    noHistory: "Ainda não há histórico.",
+    fileReady: "Pronto ✓",
+    btnRedo: "🔁 Refazer",
+    btnClear: "🗑 Limpar",
+    sectionTitle: "CONFIGURAÇÕES",
+    sectionQuickActions: "Ações rápidas",
+    toneStripLabel: "🎨 Acesso rápido de tons",
+    fileZoneText: "Anexar ficha técnica, cotação ou documento",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Seu Perfil",
+    profileUnconfigured: "Não configurado",
+    profileNameLabel: "SEU NOME",
+    profileNameOptional: "(opcional)",
+    profileGenderLabel: "GÊNERO",
+    profileMale: "🧑 Masculino",
+    profileFemale: "👩 Feminino",
+    profileGenderMale: "Masculino",
+    profileGenderFemale: "Feminino",
+    profileGenderNone: "Gênero não configurado",
+    btnSaveProfile: "💾 Salvar perfil",
+    apikeyLabel: "🔑 Chave API Anthropic",
+    btnSaveKey: "💾 Salvar chave",
+    btnDelKey: "🗑 Excluir chave",
+    apikeyNoKey: "Sem chave — modo Claude.ai (usa seus tokens de conta)",
+    apikeyHasSaved: "Chave salva",
+    apikeyInfoTitle: "Quando você precisa de uma Chave API?",
+    apikeyInfo: "• <strong>Dentro do Claude.ai</strong> (este chat): <em>não precisa de nada</em>, o app usa sua conta automaticamente.<br>• <strong>Fora do Claude.ai</strong> (arquivo local, seu servidor): insira sua chave de <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>A chave é salva somente no seu dispositivo.",
+    privacyText: "<strong>Privacidade:</strong> Seu texto e imagens são enviados ao Claude (Anthropic) para processamento. O histórico é salvo somente no seu dispositivo.",
+    btnClearHistory: "🗑 Limpar histórico",
+    confirmClearHistory: "Excluir todo o histórico?",
+    toastCleared: "🗑 Histórico apagado",
+    toastCopied: "✅ Copiado!",
+    toastLoaded: "⬆️ Carregado como entrada",
+    toastNoText: "✏️ Escreva ou cole texto primeiro",
+    toastNoTextShort: "✏️ Escreva texto primeiro",
+    toastNoFile: "Anexe um arquivo primeiro",
+    toastApiKeyRequired: "✏️ Insira sua chave API",
+    toastApiKeyInvalid: "❌ Chave inválida (deve começar com sk-ant-)",
+    toastApiKeySaved: "✅ Chave API salva",
+    toastApiKeyDeleted: "🗑 Chave API excluída",
+    toastProfileSaved: "✅ Perfil salvo",
+    toastFilePdf: "✅ PDF pronto",
+    toastFileImg: "✅ Imagem pronta",
+    toastFileError: "❌ Use PDF ou imagem",
+    toastFileReadError: "❌ Erro ao ler o arquivo",
+    toastHoldToCopy: "✋ Pressione e segure o resultado para copiar",
+    modalTranslateTitle: "🌐 Escolher idioma de tradução",
+    modalTranslateSub: "Para qual idioma deseja traduzir?",
+    modalTranslatePlaceholder: "Ex: alemão, japonês, árabe, coreano...",
+    modalTranslateCancel: "Cancelar",
+    modalTranslateConfirm: "Traduzir",
+    modalUiLangTitle: "🌐 Idioma da interface",
+    modalUiLangSub: "Selecione o idioma da interface",
+    modalUiLangCancel: "Cancelar",
+    modalUiLangOther: "Outro idioma",
+    modalUiLangOtherSub: "Especifique o idioma destino",
+    modalRespLangTitle: "🌐 Idioma de resposta",
+    modalRespLangSub: "Em que idioma deseja que a IA responda?",
+    modalRespLangPlaceholder: "Ex: japonês, árabe, chinês, coreano...",
+    modalRespLangCancel: "Cancelar",
+    modalRespLangConfirm: "Aplicar",
+    modalToneTitle: "🎨 Mudar tom",
+    modalToneSub: "Selecione um tom para reescrever o texto preservando o significado original.",
+    modalToneApply: "Aplicar tom",
+    modalToneCancel: "Cancelar",
+    toneNames: ["Humanizar","Cortês","Romântico","Conversacional","Empático","Motivador","Narrativa","Minimalista","Urgente","Nostálgico","Engraçado","Poético","Sarcástico","Enérgico","Coquete","Sagaz","Entusiasmado","Assertivo","Diplomático","Formal","Casual","Cooperativo","Fluente","Compassivo","Confiante","Envolvente","Versificar","Poetizar"],
+    toneDescs: ["Remover tom de IA, tornar autêntico","Formal, respeitoso e educado","Quente, emocional e afetuoso","Tom de diálogo natural","Empático, com apoio emocional","Inspirar, motivar e energizar","Narrativa com início, meio e fim","Menos palavras, mais impacto","Gerar ação imediata","Evoca memórias e emoções passadas","Leve, com humor e engenho","Metáforas, ritmo e estética","Ironia, duplo sentido e mordacidade","Firme, direto, discordância","Brincalhão, sutil e confiante","Aguçado, inteligente e gracioso","Animado e cheio de energia","Direto, seguro e sem rodeios","Equilibrado e cuidadoso","Profissional e sério","Amigável e relaxado","Colaborativo e em equipe","Leitura suave e natural","Quente e cheio de calor humano","Confiante e autoritário","Interessante e envolvente","Converte texto em versos com rima","Transforma texto em poema"],
+    promptNames: {
+      master_ai:"MASTER — IA detecta fase", idea_to_text:"Gerar desde ideia", humanize:"Humanizar", improve:"Melhorar", shorter:"Encurtar", expand:"Expandir", rephrase:"Reformular", rewrite:"Reescrever", active_voice:"Voz ativa", formal:"Formalizar", email:"Email profissional", summary:"Resumir", action:"Pontos de ação", pitch:"Pitch de vendas", cta:"Chamada para ação", benefits:"Vantagens e Benefícios", objections:"Gerenciar objeções", ad_copy:"Copy para anúncio", followup:"Follow-up", testimonial:"Depoimento", value_prop:"Proposta de valor", social_post:"Post social", tweet:"Tweet / X", threads:"Threads", hook:"Hook viral", caption:"Legenda foto", add_emojis:"+ Emojis", to_english:"Para inglês", to_spanish:"Para espanhol", to_french:"Para francês", to_portuguese:"Para português", to_italian:"Para italiano", to_other:"Outro idioma", reply:"Responder", apologize:"Pedir desculpas", detailed:"Detalhado"
+    },
+    promptDescs: {
+      master_ai:"Detecta automaticamente sua fase de venda", idea_to_text:"Descreva sua intenção e a IA redige", humanize:"Remover tom de IA, tornar natural", improve:"Melhorar gramática e estilo", shorter:"Mais conciso, mesma mensagem", expand:"Adicionar detalhe e riqueza", rephrase:"Dizer o mesmo de forma diferente", rewrite:"Nova versão, mesma essência", active_voice:"Converter passiva → ativa", formal:"Tom profissional e sério", email:"Formato de email completo", summary:"Pontos-chave em lista", action:"Extrair tarefas e próximos passos", pitch:"Proposta irresistível e direta", cta:"CTA que gera cliques e vendas", benefits:"Converter specs em valor de venda", objections:"Responder dúvidas e resistências", ad_copy:"Facebook / Instagram Ads", followup:"Mensagem de acompanhamento eficaz", testimonial:"Converter feedback em prova social", value_prop:"O que te torna único?", social_post:"LinkedIn, Instagram, etc.", tweet:"Menos de 280 caracteres", threads:"Otimizado para 500 caracteres", hook:"Primeira linha que prende", caption:"Legenda de imagem", add_emojis:"Adicionar emojis estratégicos", to_english:"Tradução natural", to_spanish:"Tradução natural", to_french:"Tradução natural", to_portuguese:"Tradução natural", to_italian:"Tradução natural", to_other:"Especifique o idioma destino", reply:"Redigir uma resposta", apologize:"Redigir um pedido de desculpas", detailed:"Preciso com mais contexto"
+    },
+  },
+  it: {
+    categories: ["✨ Tutto","🚀 MASTER","💡 Crea","✍️ Scrittura","💼 Lavoro","🎯 Vendite","📱 Social","🌐 Traduci","💬 Messaggi","🎨 Toni"],
+    inputLabel: "Il tuo testo",
+    inputLabelOpt: "Il tuo testo (opzionale)",
+    placeholder: "Scrivi, incolla o ditta il tuo testo qui…",
+    charUnit: "caratteri",
+    quickReply: "💬 Rispondi",
+    btnCopy: "📋 Copia",
+    btnReplace: "⬆️ Usa come input",
+    btnHumanize: "🫀 Umanizza",
+    btnToneResult: "🎨 Cambia tono",
+    settingsTitle: "IMPOSTAZIONI",
+    btnBack: "← Indietro",
+    outputLang: "Lingua di risposta",
+    theme: "Tema",
+    themeDark: "🌙 Scuro",
+    themeLight: "☀️ Chiaro",
+    defaultTone: "Tono predefinito",
+    toneNeutral: "Neutro",
+    toneFormal: "Formale",
+    toneCasual: "Informale",
+    noHistory: "Nessuno storico ancora.",
+    fileReady: "Pronto ✓",
+    btnRedo: "🔁 Rifare",
+    btnClear: "🗑 Cancella",
+    sectionTitle: "IMPOSTAZIONI",
+    sectionQuickActions: "Azioni rapide",
+    toneStripLabel: "🎨 Accesso rapido ai toni",
+    fileZoneText: "Allega scheda tecnica, preventivo o documento",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Il tuo Profilo",
+    profileUnconfigured: "Non configurato",
+    profileNameLabel: "IL TUO NOME",
+    profileNameOptional: "(opzionale)",
+    profileGenderLabel: "GENERE",
+    profileMale: "🧑 Maschile",
+    profileFemale: "👩 Femminile",
+    profileGenderMale: "Maschile",
+    profileGenderFemale: "Femminile",
+    profileGenderNone: "Genere non configurato",
+    btnSaveProfile: "💾 Salva profilo",
+    apikeyLabel: "🔑 Chiave API Anthropic",
+    btnSaveKey: "💾 Salva chiave",
+    btnDelKey: "🗑 Elimina chiave",
+    apikeyNoKey: "Nessuna chiave — modalità Claude.ai (usa i tuoi token account)",
+    apikeyHasSaved: "Chiave salvata",
+    apikeyInfoTitle: "Quando hai bisogno di una chiave API?",
+    apikeyInfo: "• <strong>In Claude.ai</strong> (questa chat): <em>non hai bisogno di nulla</em>, l'app usa il tuo account automaticamente.<br>• <strong>Fuori da Claude.ai</strong> (file locale, il tuo server): inserisci la tua chiave da <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>La chiave è salvata solo sul tuo dispositivo.",
+    privacyText: "<strong>Privacy:</strong> Il tuo testo e le immagini vengono inviati a Claude (Anthropic) per l'elaborazione. La cronologia è salvata solo sul tuo dispositivo.",
+    btnClearHistory: "🗑 Cancella cronologia",
+    confirmClearHistory: "Eliminare tutta la cronologia?",
+    toastCleared: "🗑 Cronologia cancellata",
+    toastCopied: "✅ Copiato!",
+    toastLoaded: "⬆️ Caricato come input",
+    toastNoText: "✏️ Scrivi o incolla il testo prima",
+    toastNoTextShort: "✏️ Scrivi il testo prima",
+    toastNoFile: "Allega prima un file",
+    toastApiKeyRequired: "✏️ Inserisci la tua chiave API",
+    toastApiKeyInvalid: "❌ Chiave non valida (deve iniziare con sk-ant-)",
+    toastApiKeySaved: "✅ Chiave API salvata",
+    toastApiKeyDeleted: "🗑 Chiave API eliminata",
+    toastProfileSaved: "✅ Profilo salvato",
+    toastFilePdf: "✅ PDF pronto",
+    toastFileImg: "✅ Immagine pronta",
+    toastFileError: "❌ Usa PDF o immagine",
+    toastFileReadError: "❌ Errore nella lettura del file",
+    toastHoldToCopy: "✋ Tieni premuto il risultato per copiare",
+    modalTranslateTitle: "🌐 Scegli la lingua di traduzione",
+    modalTranslateSub: "In quale lingua vuoi tradurre?",
+    modalTranslatePlaceholder: "Es: tedesco, giapponese, arabo, coreano...",
+    modalTranslateCancel: "Annulla",
+    modalTranslateConfirm: "Traduci",
+    modalUiLangTitle: "🌐 Lingua dell'interfaccia",
+    modalUiLangSub: "Seleziona la lingua dell'interfaccia",
+    modalUiLangCancel: "Annulla",
+    modalUiLangOther: "Altra lingua",
+    modalUiLangOtherSub: "Specifica la lingua di destinazione",
+    modalRespLangTitle: "🌐 Lingua di risposta",
+    modalRespLangSub: "In quale lingua vuoi che l'IA risponda?",
+    modalRespLangPlaceholder: "Es: giapponese, arabo, cinese, coreano...",
+    modalRespLangCancel: "Annulla",
+    modalRespLangConfirm: "Applica",
+    modalToneTitle: "🎨 Cambia tono",
+    modalToneSub: "Seleziona un tono per riscrivere il testo conservando il significato originale.",
+    modalToneApply: "Applica tono",
+    modalToneCancel: "Annulla",
+    toneNames: ["Umanizza","Cortese","Romantico","Conversazionale","Empatico","Motivante","Narrazione","Minimalista","Urgente","Nostalgico","Divertente","Poetico","Sarcastico","Energico","Flirty","Ingegnoso","Entusiasta","Assertivo","Diplomatico","Formale","Informale","Cooperativo","Fluente","Compassionevole","Fiducioso","Coinvolgente","Versificare","Poetizzare"],
+    toneDescs: ["Rimuovere tono IA, renderlo autentico","Formale, rispettoso e educato","Caldo, emotivo e affettuoso","Tono di dialogo naturale","Empatico, con supporto emotivo","Ispirare, motivare ed energizzare","Narrazione con inizio, svolgimento e fine","Meno parole, più impatto","Generare azione immediata","Evoca ricordi ed emozioni passate","Leggero, con umorismo e spirito","Metafore, ritmo ed estetica","Ironia, doppio senso e mordacità","Fermo, diretto, disaccordo","Giocoso, sottile e sicuro","Acuto, intelligente e grazioso","Eccitato e pieno di energia","Diretto, sicuro e senza giri di parole","Equilibrato e attento","Professionale e serio","Amichevole e rilassato","Collaborativo e di squadra","Lettura fluida e naturale","Caldo e pieno di calore umano","Sicuro e autorevole","Interessante e coinvolgente","Converte il testo in versi con rima","Trasforma il testo in una poesia"],
+    promptNames: {
+      master_ai:"MASTER — IA rileva fase", idea_to_text:"Genera da idea", humanize:"Umanizza", improve:"Migliora", shorter:"Accorcia", expand:"Espandi", rephrase:"Riformula", rewrite:"Riscrivi", active_voice:"Voce attiva", formal:"Formalizza", email:"Email professionale", summary:"Riassumi", action:"Punti d'azione", pitch:"Pitch di vendita", cta:"Chiamata all'azione", benefits:"Vantaggi e Benefici", objections:"Gestisci obiezioni", ad_copy:"Copy per annuncio", followup:"Follow-up", testimonial:"Testimonianza", value_prop:"Proposta di valore", social_post:"Post social", tweet:"Tweet / X", threads:"Threads", hook:"Hook virale", caption:"Didascalia foto", add_emojis:"+ Emoji", to_english:"In inglese", to_spanish:"In spagnolo", to_french:"In francese", to_portuguese:"In portoghese", to_italian:"In italiano", to_other:"Altra lingua", reply:"Rispondi", apologize:"Chiedi scusa", detailed:"Dettagliato"
+    },
+    promptDescs: {
+      master_ai:"Rileva automaticamente la tua fase di vendita", idea_to_text:"Descrivi la tua intenzione e l'IA scrive", humanize:"Rimuovere tono IA, renderlo naturale", improve:"Migliorare grammatica e stile", shorter:"Più conciso, stesso messaggio", expand:"Aggiungere dettagli e ricchezza", rephrase:"Dire la stessa cosa diversamente", rewrite:"Nuova versione, stessa essenza", active_voice:"Convertire passivo → attivo", formal:"Tono professionale e serio", email:"Formato email completo", summary:"Punti chiave in elenco", action:"Estrarre attività e prossimi passi", pitch:"Proposta irresistibile e diretta", cta:"CTA che genera clic e vendite", benefits:"Convertire specifiche in valore", objections:"Rispondere a dubbi e resistenze", ad_copy:"Facebook / Instagram Ads", followup:"Messaggio di follow-up efficace", testimonial:"Convertire feedback in prova sociale", value_prop:"Cosa ti rende unico?", social_post:"LinkedIn, Instagram, ecc.", tweet:"Meno di 280 caratteri", threads:"Ottimizzato per 500 caratteri", hook:"Prima riga che aggancia", caption:"Didascalia immagine", add_emojis:"Aggiungere emoji strategiche", to_english:"Traduzione naturale", to_spanish:"Traduzione naturale", to_french:"Traduzione naturale", to_portuguese:"Traduzione naturale", to_italian:"Traduzione naturale", to_other:"Specifica la lingua di destinazione", reply:"Scrivi una risposta", apologize:"Scrivi scuse sincere", detailed:"Preciso con più contesto"
+    },
+  },
+  zh: {
+    categories: ["✨ 全部","🚀 核心","💡 创作","✍️ 写作","💼 工作","🎯 销售","📱 社交","🌐 翻译","💬 消息","🎨 语气"],
+    inputLabel: "您的文本",
+    inputLabelOpt: "您的文本（可选）",
+    placeholder: "在此输入、粘贴或听写您的文本…",
+    charUnit: "字符",
+    quickReply: "💬 回复",
+    btnCopy: "📋 复制",
+    btnReplace: "⬆️ 用作输入",
+    btnHumanize: "🫀 人性化",
+    btnToneResult: "🎨 更换语气",
+    settingsTitle: "设置",
+    btnBack: "← 返回",
+    outputLang: "输出语言",
+    theme: "主题",
+    themeDark: "🌙 深色",
+    themeLight: "☀️ 浅色",
+    defaultTone: "默认语气",
+    toneNeutral: "中性",
+    toneFormal: "正式",
+    toneCasual: "随意",
+    noHistory: "暂无历史记录。",
+    fileReady: "就绪 ✓",
+    btnRedo: "🔁 重做",
+    btnClear: "🗑 清除",
+    sectionTitle: "设置",
+    sectionQuickActions: "快捷操作",
+    toneStripLabel: "🎨 语气快捷方式",
+    fileZoneText: "附加规格表、报价单或文档",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "您的资料",
+    profileUnconfigured: "未配置",
+    profileNameLabel: "您的姓名",
+    profileNameOptional: "（可选）",
+    profileGenderLabel: "性别",
+    profileMale: "🧑 男性",
+    profileFemale: "👩 女性",
+    profileGenderMale: "男性",
+    profileGenderFemale: "女性",
+    profileGenderNone: "性别未配置",
+    btnSaveProfile: "💾 保存资料",
+    apikeyLabel: "🔑 Anthropic API 密钥",
+    btnSaveKey: "💾 保存密钥",
+    btnDelKey: "🗑 删除密钥",
+    apikeyNoKey: "无密钥 — Claude.ai 模式（使用您的账户令牌）",
+    apikeyHasSaved: "密钥已保存",
+    apikeyInfoTitle: "什么时候需要 API 密钥？",
+    apikeyInfo: "• <strong>在 Claude.ai 内</strong>（此聊天）：<em>无需任何操作</em>，应用自动使用您的账户。<br>• <strong>在 Claude.ai 外</strong>（本地文件、您的服务器）：从 <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a> 输入您的密钥。<br><br>密钥仅保存在您的设备上。",
+    privacyText: "<strong>隐私：</strong>您的文本和图像将发送给 Claude (Anthropic) 处理。历史记录仅保存在您的设备上。",
+    btnClearHistory: "🗑 清除历史",
+    confirmClearHistory: "删除所有历史？",
+    toastCleared: "🗑 历史已清除",
+    toastCopied: "✅ 已复制！",
+    toastLoaded: "⬆️ 已加载为输入",
+    toastNoText: "✏️ 请先写入或粘贴文本",
+    toastNoTextShort: "✏️ 请先写入文本",
+    toastNoFile: "请先附加文件",
+    toastApiKeyRequired: "✏️ 请输入您的 API 密钥",
+    toastApiKeyInvalid: "❌ 无效密钥（必须以 sk-ant- 开头）",
+    toastApiKeySaved: "✅ API 密钥已保存",
+    toastApiKeyDeleted: "🗑 API 密钥已删除",
+    toastProfileSaved: "✅ 资料已保存",
+    toastFilePdf: "✅ PDF 就绪",
+    toastFileImg: "✅ 图像就绪",
+    toastFileError: "❌ 请使用 PDF 或图像",
+    toastFileReadError: "❌ 读取文件时出错",
+    toastHoldToCopy: "✋ 长按结果以复制",
+    modalTranslateTitle: "🌐 选择翻译语言",
+    modalTranslateSub: "您想翻译成哪种语言？",
+    modalTranslatePlaceholder: "例如：德语、日语、阿拉伯语、韩语...",
+    modalTranslateCancel: "取消",
+    modalTranslateConfirm: "翻译",
+    modalUiLangTitle: "🌐 界面语言",
+    modalUiLangSub: "选择界面语言",
+    modalUiLangCancel: "取消",
+    modalUiLangOther: "其他语言",
+    modalUiLangOtherSub: "指定目标语言",
+    modalRespLangTitle: "🌐 输出语言",
+    modalRespLangSub: "您希望 AI 用哪种语言回应？",
+    modalRespLangPlaceholder: "例如：日语、阿拉伯语、中文、韩语...",
+    modalRespLangCancel: "取消",
+    modalRespLangConfirm: "应用",
+    modalToneTitle: "🎨 更改语气",
+    modalToneSub: "选择一种语气来改写文本，同时保留原始含义。",
+    modalToneApply: "应用语气",
+    modalToneCancel: "取消",
+    toneNames: ["人性化","礼貌","浪漫","对话式","同理心","励志","故事叙述","简约","紧迫","怀旧","幽默","诗意","讽刺","激昂","调情","机智","热情","果断","外交","正式","随意","合作","流畅","慈悲","自信","吸引人","诗化","成诗"],
+    toneDescs: ["去除AI语气，使其真实","正式、尊重且有礼貌","温暖、情感丰富且深情","自然对话语气","有同理心，给予情感支持","激励、鼓励和充满活力","有开端、发展和结局的叙事","更少的话，更大的冲击","产生立即行动","唤起回忆和过去的情感","轻松，带有幽默和机智","隐喻、节奏和美学","讽刺、双关和犀利","坚定、直接，表达异议","俏皮、微妙且自信","敏锐、智慧且优雅","兴奋且充满活力","直接、自信且直截了当","平衡且谨慎","专业且认真","友好且放松","协作与团队精神","流畅自然的阅读","温暖且充满人情味","自信且权威","有趣且引人入胜","将文字转化为押韵诗句","将文字转化为诗歌"],
+    promptNames: {
+      master_ai:"核心 — AI检测阶段", idea_to_text:"从想法生成", humanize:"人性化", improve:"改进", shorter:"缩短", expand:"扩展", rephrase:"改写", rewrite:"重写", active_voice:"主动语态", formal:"正式化", email:"专业邮件", summary:"总结", action:"行动要点", pitch:"销售话术", cta:"行动号召", benefits:"优势与好处", objections:"处理异议", ad_copy:"广告文案", followup:"跟进", testimonial:"客户见证", value_prop:"价值主张", social_post:"社交帖子", tweet:"推文 / X", threads:"Threads", hook:"病毒钩子", caption:"照片说明", add_emojis:"+ 表情符号", to_english:"译成英文", to_spanish:"译成西班牙文", to_french:"译成法文", to_portuguese:"译成葡萄牙文", to_italian:"译成意大利文", to_other:"其他语言", reply:"回复", apologize:"道歉", detailed:"详细"
+    },
+    promptDescs: {
+      master_ai:"自动检测您的销售阶段", idea_to_text:"描述您的意图，AI来撰写", humanize:"去除AI语气，使其自然", improve:"改进语法和风格", shorter:"更简洁，相同的信息", expand:"添加细节和丰富性", rephrase:"用不同的方式表达相同意思", rewrite:"全新版本，相同精髓", active_voice:"被动 → 主动转换", formal:"专业且严肃的语气", email:"完整邮件格式", summary:"关键点列表", action:"提取任务和后续步骤", pitch:"无法拒绝的提案", cta:"产生点击和销售的CTA", benefits:"将规格转化为销售价值", objections:"回答疑虑和抵触", ad_copy:"Facebook / Instagram广告", followup:"有效的跟进信息", testimonial:"将反馈转化为社会证明", value_prop:"什么让您与众不同？", social_post:"领英、Instagram等", tweet:"少于280个字符", threads:"针对500个字符优化", hook:"吸引人的第一行", caption:"图片说明", add_emojis:"添加战略性表情符号", to_english:"自然翻译", to_spanish:"自然翻译", to_french:"自然翻译", to_portuguese:"自然翻译", to_italian:"自然翻译", to_other:"指定目标语言", reply:"起草回复", apologize:"起草真诚道歉", detailed:"更精确详细"
+    },
+  },
+  ja: {
+    categories: ["✨ すべて","🚀 マスター","💡 作成","✍️ 文章","💼 仕事","🎯 営業","📱 SNS","🌐 翻訳","💬 メッセージ","🎨 トーン"],
+    inputLabel: "あなたのテキスト",
+    inputLabelOpt: "あなたのテキスト（任意）",
+    placeholder: "ここにテキストを入力、貼り付け、または口述してください…",
+    charUnit: "文字",
+    quickReply: "💬 返信",
+    btnCopy: "📋 コピー",
+    btnReplace: "⬆️ 入力として使用",
+    btnHumanize: "🫀 人間らしく",
+    btnToneResult: "🎨 トーンを変更",
+    settingsTitle: "設定",
+    btnBack: "← 戻る",
+    outputLang: "出力言語",
+    theme: "テーマ",
+    themeDark: "🌙 ダーク",
+    themeLight: "☀️ ライト",
+    defaultTone: "デフォルトトーン",
+    toneNeutral: "ニュートラル",
+    toneFormal: "フォーマル",
+    toneCasual: "カジュアル",
+    noHistory: "まだ履歴はありません。",
+    fileReady: "準備完了 ✓",
+    btnRedo: "🔁 やり直し",
+    btnClear: "🗑 クリア",
+    sectionTitle: "設定",
+    sectionQuickActions: "クイックアクション",
+    toneStripLabel: "🎨 トーンクイックアクセス",
+    fileZoneText: "仕様書、見積書またはドキュメントを添付",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "あなたのプロフィール",
+    profileUnconfigured: "未設定",
+    profileNameLabel: "あなたの名前",
+    profileNameOptional: "（任意）",
+    profileGenderLabel: "性別",
+    profileMale: "🧑 男性",
+    profileFemale: "👩 女性",
+    profileGenderMale: "男性",
+    profileGenderFemale: "女性",
+    profileGenderNone: "性別未設定",
+    btnSaveProfile: "💾 プロフィールを保存",
+    apikeyLabel: "🔑 Anthropic APIキー",
+    btnSaveKey: "💾 キーを保存",
+    btnDelKey: "🗑 キーを削除",
+    apikeyNoKey: "キーなし — Claude.aiモード（アカウントトークンを使用）",
+    apikeyHasSaved: "キー保存済み",
+    apikeyInfoTitle: "APIキーはいつ必要ですか？",
+    apikeyInfo: "• <strong>Claude.ai内</strong>（このチャット）：<em>何も不要</em>、アプリが自動的にアカウントを使用します。<br>• <strong>Claude.ai外</strong>（ローカルファイル、サーバー）：<a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>からキーを入力してください。<br><br>キーはデバイスにのみ保存されます。",
+    privacyText: "<strong>プライバシー：</strong>テキストと画像は処理のためClaude (Anthropic)に送信されます。履歴はデバイスにのみ保存されます。",
+    btnClearHistory: "🗑 履歴を消去",
+    confirmClearHistory: "履歴をすべて削除しますか？",
+    toastCleared: "🗑 履歴を消去しました",
+    toastCopied: "✅ コピーしました！",
+    toastLoaded: "⬆️ 入力として読み込みました",
+    toastNoText: "✏️ まずテキストを入力または貼り付けてください",
+    toastNoTextShort: "✏️ まずテキストを入力してください",
+    toastNoFile: "まずファイルを添付してください",
+    toastApiKeyRequired: "✏️ APIキーを入力してください",
+    toastApiKeyInvalid: "❌ 無効なキー（sk-ant-で始まる必要があります）",
+    toastApiKeySaved: "✅ APIキーを保存しました",
+    toastApiKeyDeleted: "🗑 APIキーを削除しました",
+    toastProfileSaved: "✅ プロフィールを保存しました",
+    toastFilePdf: "✅ PDF準備完了",
+    toastFileImg: "✅ 画像準備完了",
+    toastFileError: "❌ PDFまたは画像を使用してください",
+    toastFileReadError: "❌ ファイルの読み取りエラー",
+    toastHoldToCopy: "✋ 結果を長押ししてコピー",
+    modalTranslateTitle: "🌐 翻訳言語を選択",
+    modalTranslateSub: "どの言語に翻訳しますか？",
+    modalTranslatePlaceholder: "例：ドイツ語、アラビア語、韓国語...",
+    modalTranslateCancel: "キャンセル",
+    modalTranslateConfirm: "翻訳",
+    modalUiLangTitle: "🌐 インターフェース言語",
+    modalUiLangSub: "インターフェース言語を選択",
+    modalUiLangCancel: "キャンセル",
+    modalUiLangOther: "その他の言語",
+    modalUiLangOtherSub: "ターゲット言語を指定",
+    modalRespLangTitle: "🌐 出力言語",
+    modalRespLangSub: "AIにどの言語で応答してほしいですか？",
+    modalRespLangPlaceholder: "例：アラビア語、中国語、韓国語...",
+    modalRespLangCancel: "キャンセル",
+    modalRespLangConfirm: "適用",
+    modalToneTitle: "🎨 トーンを変更",
+    modalToneSub: "元の意味を保持しながらテキストを書き直すトーンを選択してください。",
+    modalToneApply: "トーンを適用",
+    modalToneCancel: "キャンセル",
+    toneNames: ["人間らしく","丁寧","ロマンチック","会話的","共感的","モチベーショナル","ストーリーテリング","ミニマリスト","緊急","ノスタルジック","面白い","詩的","皮肉","エネルギッシュ","フリーティー","ウィッティー","熱狂的","アサーティブ","外交的","フォーマル","カジュアル","協力的","流暢","思いやり","自信","魅力的","詩化","詩に変換"],
+    toneDescs: ["AIトーンを除去し、本物らしく","正式で、敬意があり、礼儀正しい","温かく、感情豊かで、愛情深い","自然な対話のトーン","共感的で、感情的サポートを提供","インスパイア、モチベート、エネルギッシュ","始まり、中盤、結末のある物語","少ない言葉、より大きなインパクト","即座の行動を促す","過去の記憶や感情を呼び起こす","軽やかでユーモアと機知がある","比喩、リズム、美学","皮肉、二重の意味、鋭さ","確固として、直接的、異議","遊び心があり、繊細で自信がある","鋭く、知的で、優雅","興奮していてエネルギーに満ちている","直接的で、自信があり、率直","バランスが取れていて慎重","プロフェッショナルで真剣","フレンドリーでリラックスした","協力的でチームワーク","スムーズで自然な読み心地","温かく人情味がある","自信があり権威ある","興味深く引き込まれる","テキストを韻文に変換","テキストを詩に変換"],
+    promptNames: {
+      master_ai:"マスター — AIがステージを検出", idea_to_text:"アイデアから生成", humanize:"人間らしく", improve:"改善", shorter:"短縮", expand:"拡張", rephrase:"言い換え", rewrite:"書き直し", active_voice:"能動態", formal:"フォーマル化", email:"プロフェッショナルメール", summary:"要約", action:"アクションポイント", pitch:"セールスピッチ", cta:"行動促進", benefits:"メリットと利点", objections:"反論処理", ad_copy:"広告コピー", followup:"フォローアップ", testimonial:"お客様の声", value_prop:"バリュープロポジション", social_post:"ソーシャル投稿", tweet:"ツイート / X", threads:"スレッド", hook:"バイラルフック", caption:"写真キャプション", add_emojis:"絵文字を追加", to_english:"英語に翻訳", to_spanish:"スペイン語に翻訳", to_french:"フランス語に翻訳", to_portuguese:"ポルトガル語に翻訳", to_italian:"イタリア語に翻訳", to_other:"その他の言語", reply:"返信", apologize:"謝罪", detailed:"詳細"
+    },
+    promptDescs: {
+      master_ai:"セールスステージを自動検出", idea_to_text:"意図を説明してAIが作成", humanize:"AIトーンを除去し自然に", improve:"文法とスタイルを改善", shorter:"より簡潔に、同じメッセージ", expand:"詳細と豊かさを追加", rephrase:"同じことを別の言い方で", rewrite:"新しいバージョン、同じ本質", active_voice:"受動態→能動態に変換", formal:"プロフェッショナルで真剣なトーン", email:"完全なメール形式", summary:"要点をリスト形式で", action:"タスクと次のステップを抽出", pitch:"断りきれない提案", cta:"クリックと売上を生むCTA", benefits:"スペックを価値に変換", objections:"疑問と抵抗に答える", ad_copy:"Facebook / Instagram広告", followup:"効果的なフォローアップメッセージ", testimonial:"フィードバックをソーシャルプルーフに変換", value_prop:"あなたをユニークにするものは？", social_post:"LinkedIn、Instagramなど", tweet:"280文字以内", threads:"500文字に最適化", hook:"引き込まれる最初の一行", caption:"画像のキャプション", add_emojis:"戦略的な絵文字を追加", to_english:"自然な翻訳", to_spanish:"自然な翻訳", to_french:"自然な翻訳", to_portuguese:"自然な翻訳", to_italian:"自然な翻訳", to_other:"対象言語を指定", reply:"返信を作成", apologize:"誠実な謝罪を作成", detailed:"より詳細で正確"
+    },
+  },
+  ko: {
+    categories: ["✨ 전체","🚀 마스터","💡 만들기","✍️ 글쓰기","💼 업무","🎯 영업","📱 소셜","🌐 번역","💬 메시지","🎨 톤"],
+    inputLabel: "텍스트 입력",
+    inputLabelOpt: "텍스트 입력 (선택 사항)",
+    placeholder: "여기에 텍스트를 입력, 붙여넣기 또는 받아쓰기하세요…",
+    charUnit: "자",
+    quickReply: "💬 답장",
+    btnCopy: "📋 복사",
+    btnReplace: "⬆️ 입력으로 사용",
+    btnHumanize: "🫀 인간미 추가",
+    btnToneResult: "🎨 톤 변경",
+    settingsTitle: "설정",
+    btnBack: "← 뒤로",
+    outputLang: "출력 언어",
+    theme: "테마",
+    themeDark: "🌙 다크",
+    themeLight: "☀️ 라이트",
+    defaultTone: "기본 톤",
+    toneNeutral: "중립",
+    toneFormal: "격식체",
+    toneCasual: "캐주얼",
+    noHistory: "아직 기록이 없습니다.",
+    fileReady: "준비 완료 ✓",
+    btnRedo: "🔁 다시하기",
+    btnClear: "🗑 지우기",
+    sectionTitle: "설정",
+    sectionQuickActions: "빠른 작업",
+    toneStripLabel: "🎨 톤 빠른 접근",
+    fileZoneText: "사양서, 견적서 또는 문서 첨부",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "내 프로필",
+    profileUnconfigured: "미설정",
+    profileNameLabel: "이름",
+    profileNameOptional: "（선택사항）",
+    profileGenderLabel: "성별",
+    profileMale: "🧑 남성",
+    profileFemale: "👩 여성",
+    profileGenderMale: "남성",
+    profileGenderFemale: "여성",
+    profileGenderNone: "성별 미설정",
+    btnSaveProfile: "💾 프로필 저장",
+    apikeyLabel: "🔑 Anthropic API 키",
+    btnSaveKey: "💾 키 저장",
+    btnDelKey: "🗑 키 삭제",
+    apikeyNoKey: "키 없음 — Claude.ai 모드（계정 토큰 사용）",
+    apikeyHasSaved: "키 저장됨",
+    apikeyInfoTitle: "API 키가 언제 필요한가요?",
+    apikeyInfo: "• <strong>Claude.ai 내부</strong>（이 채팅）：<em>아무것도 필요 없습니다</em>，앱이 자동으로 계정을 사용합니다.<br>• <strong>Claude.ai 외부</strong>（로컬 파일, 서버）：<a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>에서 키를 입력하세요.<br><br>키는 기기에만 저장됩니다.",
+    privacyText: "<strong>개인정보：</strong>텍스트와 이미지는 처리를 위해 Claude (Anthropic)에 전송됩니다. 기록은 기기에만 저장됩니다.",
+    btnClearHistory: "🗑 기록 삭제",
+    confirmClearHistory: "모든 기록을 삭제할까요?",
+    toastCleared: "🗑 기록이 삭제되었습니다",
+    toastCopied: "✅ 복사되었습니다!",
+    toastLoaded: "⬆️ 입력으로 불러왔습니다",
+    toastNoText: "✏️ 먼저 텍스트를 입력하거나 붙여넣으세요",
+    toastNoTextShort: "✏️ 먼저 텍스트를 입력하세요",
+    toastNoFile: "먼저 파일을 첨부하세요",
+    toastApiKeyRequired: "✏️ API 키를 입력하세요",
+    toastApiKeyInvalid: "❌ 잘못된 키（sk-ant-로 시작해야 합니다）",
+    toastApiKeySaved: "✅ API 키가 저장되었습니다",
+    toastApiKeyDeleted: "🗑 API 키가 삭제되었습니다",
+    toastProfileSaved: "✅ 프로필이 저장되었습니다",
+    toastFilePdf: "✅ PDF 준비 완료",
+    toastFileImg: "✅ 이미지 준비 완료",
+    toastFileError: "❌ PDF 또는 이미지를 사용하세요",
+    toastFileReadError: "❌ 파일 읽기 오류",
+    toastHoldToCopy: "✋ 결과를 길게 눌러 복사",
+    modalTranslateTitle: "🌐 번역 언어 선택",
+    modalTranslateSub: "어떤 언어로 번역하시겠습니까？",
+    modalTranslatePlaceholder: "예: 독일어, 일본어, 아랍어, 중국어...",
+    modalTranslateCancel: "취소",
+    modalTranslateConfirm: "번역",
+    modalUiLangTitle: "🌐 인터페이스 언어",
+    modalUiLangSub: "인터페이스 언어 선택",
+    modalUiLangCancel: "취소",
+    modalUiLangOther: "다른 언어",
+    modalUiLangOtherSub: "대상 언어 지정",
+    modalRespLangTitle: "🌐 출력 언어",
+    modalRespLangSub: "AI가 어떤 언어로 응답하기를 원하십니까？",
+    modalRespLangPlaceholder: "예: 일본어, 아랍어, 중국어...",
+    modalRespLangCancel: "취소",
+    modalRespLangConfirm: "적용",
+    modalToneTitle: "🎨 톤 변경",
+    modalToneSub: "원래 의미를 유지하면서 텍스트를 다시 작성할 톤을 선택하세요.",
+    modalToneApply: "톤 적용",
+    modalToneCancel: "취소",
+    toneNames: ["인간미 추가","공손한","로맨틱한","대화체","공감하는","동기부여","스토리텔링","미니멀리스트","긴급한","향수 어린","유머러스","시적인","냉소적","에너지 넘치는","설레는","재치있는","열정적인","단호한","외교적","격식체","캐주얼","협력적","유창한","다정한","자신감 있는","매력적인","시 구절로","시로 변환"],
+    toneDescs: ["AI 톤 제거, 진정성 있게","격식 있고 존중하며 예의 바른","따뜻하고 감성적이며 애정 어린","자연스러운 대화 톤","공감적이고 감정적 지지 제공","영감, 동기부여, 활력 충전","시작, 중간, 끝이 있는 서사","적은 말, 더 큰 임팩트","즉각적인 행동 유도","과거의 기억과 감정을 불러일으킴","가볍고 유머와 재치 있는","비유, 리듬, 미학","아이러니, 이중 의미, 날카로움","확고하고 직접적, 의견 불일치","장난스럽고 미묘하며 자신감 있는","예리하고 지적이며 우아한","흥분되고 에너지로 가득한","직접적이고 자신감 있고 솔직한","균형 잡히고 신중한","전문적이고 진지한","친근하고 편안한","협력적이고 팀워크","부드럽고 자연스러운 읽기","따뜻하고 인간미 넘치는","자신감 있고 권위 있는","흥미롭고 매력적인","텍스트를 운문으로 변환","텍스트를 시로 변환"],
+    promptNames: {
+      master_ai:"마스터 — AI가 단계 감지", idea_to_text:"아이디어에서 생성", humanize:"인간미 추가", improve:"개선", shorter:"단축", expand:"확장", rephrase:"재표현", rewrite:"다시 쓰기", active_voice:"능동태", formal:"격식화", email:"전문 이메일", summary:"요약", action:"실행 포인트", pitch:"영업 피치", cta:"행동 촉구", benefits:"장점 및 혜택", objections:"반론 처리", ad_copy:"광고 카피", followup:"팔로업", testimonial:"고객 후기", value_prop:"가치 제안", social_post:"소셜 게시물", tweet:"트윗 / X", threads:"스레드", hook:"바이럴 훅", caption:"사진 캡션", add_emojis:"이모지 추가", to_english:"영어로", to_spanish:"스페인어로", to_french:"프랑스어로", to_portuguese:"포르투갈어로", to_italian:"이탈리아어로", to_other:"다른 언어", reply:"답장", apologize:"사과", detailed:"상세하게"
+    },
+    promptDescs: {
+      master_ai:"영업 단계를 자동으로 감지", idea_to_text:"의도를 설명하면 AI가 작성", humanize:"AI 톤 제거, 자연스럽게", improve:"문법과 스타일 개선", shorter:"더 간결하게, 같은 메시지", expand:"세부 사항과 풍부함 추가", rephrase:"같은 내용을 다르게 표현", rewrite:"새로운 버전, 같은 본질", active_voice:"수동태 → 능동태 변환", formal:"전문적이고 진지한 톤", email:"완전한 이메일 형식", summary:"핵심 포인트 목록", action:"작업 및 다음 단계 추출", pitch:"거부할 수 없는 제안", cta:"클릭과 판매를 유도하는 CTA", benefits:"스펙을 판매 가치로 변환", objections:"의문과 저항에 답변", ad_copy:"Facebook / Instagram 광고", followup:"효과적인 팔로업 메시지", testimonial:"피드백을 사회적 증거로 변환", value_prop:"무엇이 당신을 독특하게 만드나요?", social_post:"LinkedIn, Instagram 등", tweet:"280자 미만", threads:"500자에 최적화", hook:"독자를 사로잡는 첫 줄", caption:"이미지 캡션", add_emojis:"전략적 이모지 추가", to_english:"자연스러운 번역", to_spanish:"자연스러운 번역", to_french:"자연스러운 번역", to_portuguese:"자연스러운 번역", to_italian:"자연스러운 번역", to_other:"대상 언어 지정", reply:"답장 작성", apologize:"진심 어린 사과 작성", detailed:"더 정확하고 자세하게"
+    },
+  },
+};
+
+// Helper: get UI strings for current language (fallback to ES)
+function getT() {
+  const base = uiLang.startsWith("other:") ? null : UI_STRINGS[uiLang];
+  return base || UI_STRINGS.es;
+}
+
+// Tone id order must match toneNames/toneDescs arrays in UI_STRINGS
+const TONE_IDS = ["tone_humanize","tone_polite","tone_romantic","tone_conversacional","tone_empathetic","tone_motivational","tone_storytelling","tone_minimal","tone_urgent","tone_nostalgic","tone_funny","tone_poetic","tone_sarcastic","tone_angry","tone_flirty","tone_witty","tone_enthusiastic","tone_assertive","tone_diplomatic","tone_formal","tone_casual","tone_cooperative","tone_fluent","tone_compassionate","tone_confident","tone_engaging","tone_versify","tone_poemify"];
+const UI_LANG_FLAGS  = { auto:"🌐", es:"🇪🇸", en:"🇺🇸", de:"🇩🇪", fr:"🇫🇷", it:"🇮🇹", pt:"🇧🇷", zh:"🇨🇳", ja:"🇯🇵", ko:"🇰🇷" };
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentView    = "main";
+let currentCategory= "all";
+let attachedFile   = null;
+let loading        = false;
+let resultData     = null;
+let appHistory     = [];
+let lang           = localStorage.getItem("keyai_lang")    || "auto";
+let tone           = localStorage.getItem("keyai_tone")    || "neutral";
+let uiLang         = localStorage.getItem("keyai_uilang")  || "auto";
+let appTheme       = localStorage.getItem("keyai_theme")   || "dark";
+let toastTimer     = null;
+let lastPromptId   = null;
+let lastInputText  = "";
+let activeToneId   = null; // currently selected quick-access tone
+let userProfile    = JSON.parse(localStorage.getItem("keyai_profile") || '{"name":"","gender":""}');
+
+try { appHistory = JSON.parse(localStorage.getItem("keyai_history") || "[]"); } catch {}
+
+// ─── ELEMENTS ─────────────────────────────────────────────────────────────────
+const tabsEl         = document.getElementById("tabs");
+const viewMain       = document.getElementById("view-main");
+const viewHistory    = document.getElementById("view-history");
+const viewSettings   = document.getElementById("view-settings");
+const fileZone       = document.getElementById("file-zone");
+const fileAttachedEl = document.getElementById("file-attached");
+const fileInput      = document.getElementById("file-input");
+const textInput      = document.getElementById("text-input");
+const charCount      = document.getElementById("char-count");
+const inputCard      = document.getElementById("input-card");
+const inputLabel     = document.getElementById("input-label");
+const loadingCard    = document.getElementById("loading-card");
+const loadingLabelText=document.getElementById("loading-label-text");
+const errorCard      = document.getElementById("error-card");
+const errorTitle     = document.getElementById("error-title");
+const resultCard     = document.getElementById("result-card");
+const resultLabelText= document.getElementById("result-label-text");
+const resultText     = document.getElementById("result-text");
+const docPanel       = document.getElementById("doc-panel");
+const promptsSection = document.getElementById("prompts-section");
+const promptsGrid    = document.getElementById("prompts-grid");
+const historyList    = document.getElementById("history-list");
+const langModal      = document.getElementById("lang-modal");
+const customLangInput= document.getElementById("custom-lang-input");
+const uiLangModal    = document.getElementById("ui-lang-modal");
+const toastEl        = document.getElementById("toast");
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 2500);
+}
+
+function setView(v) {
+  currentView = v;
+  [viewMain, viewHistory, viewSettings].forEach(el => el.classList.remove("active"));
+  if (v === "main")     viewMain.classList.add("active");
+  if (v === "history")  { viewHistory.classList.add("active"); renderHistory(); }
+  if (v === "settings") { viewSettings.classList.add("active"); loadApiKeyUI(); loadProfileUI(); }
+  tabsEl.style.display = v === "main" ? "flex" : "none";
+}
+
+function scrollMainTop() { viewMain.scrollTo({ top: 0, behavior: "smooth" }); }
+
+// ─── THEME ────────────────────────────────────────────────────────────────────
+function applyTheme(t) {
+  appTheme = t;
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("keyai_theme", t);
+  document.getElementById("btn-theme").textContent = t === "dark" ? "☀️" : "🌙";
+  document.querySelectorAll("#theme-btns .stag").forEach(b =>
+    b.classList.toggle("active", b.dataset.themeVal === t));
+}
+
+document.getElementById("btn-theme").addEventListener("click", () =>
+  applyTheme(appTheme === "dark" ? "light" : "dark"));
+
+document.getElementById("theme-btns").addEventListener("click", e => {
+  const v = e.target.dataset.themeVal;
+  if (v) applyTheme(v);
+});
+
+// ─── UI LANGUAGE ──────────────────────────────────────────────────────────────
+function applyUiLang(l) {
+  uiLang = l;
+  localStorage.setItem("keyai_uilang", l);
+  const customLabel = l.startsWith("other:") ? l.slice(6) : (UI_LANG_LABELS[l] || l);
+  document.getElementById("ui-lang-label").textContent = customLabel;
+
+  const t = getT();
+
+  // ── Header ──────────────────────────────────────────────────────────────────
+  const qrBtn = document.getElementById("btn-quick-reply");
+  if (qrBtn) qrBtn.textContent = t.quickReply;
+
+  // ── Input area ──────────────────────────────────────────────────────────────
+  if (typeof inputLabel !== "undefined" && inputLabel)
+    inputLabel.textContent = (typeof attachedFile !== "undefined" && attachedFile) ? t.inputLabelOpt : t.inputLabel;
+  if (typeof textInput !== "undefined" && textInput)
+    textInput.placeholder = t.placeholder;
+  if (typeof charCount !== "undefined" && charCount) {
+    const n = (typeof textInput !== "undefined" && textInput) ? textInput.value.length : 0;
+    charCount.textContent = n + " " + t.charUnit;
+  }
+
+  // ── Main view static labels ──────────────────────────────────────────────────
+  const btnClear = document.getElementById("btn-clear");
+  if (btnClear) btnClear.textContent = t.btnClear;
+  const sectionTitleEl = document.querySelector("#prompts-section .section-title");
+  if (sectionTitleEl) sectionTitleEl.textContent = t.sectionQuickActions;
+  const toneStripLabelEl = document.querySelector("#tone-strip")?.previousElementSibling;
+  if (toneStripLabelEl && toneStripLabelEl.classList.contains("input-label")) toneStripLabelEl.textContent = t.toneStripLabel;
+  const fileZoneTextEl = document.querySelector("#file-zone .file-text");
+  if (fileZoneTextEl) fileZoneTextEl.textContent = t.fileZoneText;
+  const fileZoneSubEl = document.querySelector("#file-zone .file-sub");
+  if (fileZoneSubEl) fileZoneSubEl.textContent = t.fileZoneSub;
+
+  // ── Result card buttons ──────────────────────────────────────────────────────
+  const btnCopy = document.getElementById("btn-copy");
+  if (btnCopy) btnCopy.textContent = t.btnCopy;
+  const btnRedo = document.getElementById("btn-redo");
+  if (btnRedo) btnRedo.textContent = t.btnRedo;
+  const btnReplace = document.getElementById("btn-replace");
+  if (btnReplace) btnReplace.textContent = t.btnReplace;
+  const btnHumanize = document.getElementById("btn-humanize");
+  if (btnHumanize) btnHumanize.textContent = t.btnHumanize;
+  const btnToneResult = document.getElementById("btn-tone-result");
+  if (btnToneResult) btnToneResult.textContent = t.btnToneResult;
+
+  // ── Settings header ──────────────────────────────────────────────────────────
+  const btnSettingsBack = document.getElementById("btn-settings-back");
+  if (btnSettingsBack) btnSettingsBack.textContent = t.btnBack;
+  const btnHistoryBack = document.getElementById("btn-history-back");
+  if (btnHistoryBack) btnHistoryBack.textContent = t.btnBack;
+  const settingsTitleEl = document.querySelector("#view-settings .page-header .section-title");
+  if (settingsTitleEl) settingsTitleEl.textContent = t.sectionTitle;
+
+  // ── Settings: section labels (data-i18n) ─────────────────────────────────────
+  document.querySelectorAll("#view-settings .settings-label").forEach(el => {
+    const k = el.dataset.i18n;
+    if (k === "outputLang") el.textContent = t.outputLang;
+    else if (k === "theme") el.textContent = t.theme;
+    else if (k === "defaultTone") el.textContent = t.defaultTone;
+    else if (k === "apikeyLabel") el.textContent = t.apikeyLabel;
+  });
+
+  // ── Settings: profile section ────────────────────────────────────────────────
+  const profileNameLabelEl = document.getElementById("profile-name-label");
+  if (profileNameLabelEl) profileNameLabelEl.innerHTML = t.profileNameLabel + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">' + t.profileNameOptional + '</span>';
+  const profileGenderLabelEl = document.getElementById("profile-gender-label");
+  if (profileGenderLabelEl) profileGenderLabelEl.textContent = t.profileGenderLabel;
+  const profileBtnMale = document.getElementById("profile-btn-male");
+  if (profileBtnMale) profileBtnMale.textContent = t.profileMale;
+  const profileBtnFemale = document.getElementById("profile-btn-female");
+  if (profileBtnFemale) profileBtnFemale.textContent = t.profileFemale;
+  const btnSaveProfile = document.getElementById("btn-save-profile");
+  if (btnSaveProfile) btnSaveProfile.innerHTML = t.btnSaveProfile;
+
+  // ── Settings: API key section ────────────────────────────────────────────────
+  const apikeyInfoTitleEl = document.getElementById("apikey-info-title");
+  if (apikeyInfoTitleEl) apikeyInfoTitleEl.textContent = t.apikeyInfoTitle;
+  const apikeyInfoEl = document.getElementById("apikey-info-body");
+  if (apikeyInfoEl) apikeyInfoEl.innerHTML = t.apikeyInfo;
+  const btnSaveKey = document.getElementById("btn-save-apikey");
+  if (btnSaveKey) btnSaveKey.textContent = t.btnSaveKey;
+  const btnDelKey = document.getElementById("btn-del-apikey");
+  if (btnDelKey) btnDelKey.textContent = t.btnDelKey;
+
+  // ── Settings: privacy & clear history ────────────────────────────────────────
+  const privacyTextEl = document.getElementById("privacy-text");
+  if (privacyTextEl) privacyTextEl.innerHTML = t.privacyText;
+  const btnClearHistory = document.getElementById("btn-clear-history");
+  if (btnClearHistory) btnClearHistory.textContent = t.btnClearHistory;
+
+  // ── Modals ────────────────────────────────────────────────────────────────────
+  const translateModalTitle = document.querySelector("#lang-modal .modal-title");
+  if (translateModalTitle) translateModalTitle.textContent = t.modalTranslateTitle;
+  const translateModalSub = document.querySelector("#lang-modal .modal-sub");
+  if (translateModalSub) translateModalSub.textContent = t.modalTranslateSub;
+  const customLangInputEl = document.getElementById("custom-lang-input");
+  if (customLangInputEl) customLangInputEl.placeholder = t.modalTranslatePlaceholder;
+  const btnLangCancel = document.getElementById("btn-lang-cancel");
+  if (btnLangCancel) btnLangCancel.textContent = t.modalTranslateCancel;
+  const btnLangConfirm = document.getElementById("btn-lang-confirm");
+  if (btnLangConfirm) btnLangConfirm.textContent = t.modalTranslateConfirm;
+
+  const uiLangModalTitle = document.querySelector("#ui-lang-modal .modal-title");
+  if (uiLangModalTitle) uiLangModalTitle.textContent = t.modalUiLangTitle;
+  const uiLangModalSub = document.querySelector("#ui-lang-modal .modal-sub");
+  if (uiLangModalSub) uiLangModalSub.textContent = t.modalUiLangSub;
+  const btnUiLangCancel = document.getElementById("btn-ui-lang-cancel");
+  if (btnUiLangCancel) btnUiLangCancel.textContent = t.modalUiLangCancel;
+  const uiLangOtherLabelEl = document.querySelector("#btn-ui-lang-other span:first-child + span span:first-child");
+  if (uiLangOtherLabelEl) uiLangOtherLabelEl.textContent = t.modalUiLangOther;
+  const uiLangOtherSubEl = document.querySelector("#btn-ui-lang-other span:first-child + span span:last-child");
+  if (uiLangOtherSubEl) uiLangOtherSubEl.textContent = t.modalUiLangOtherSub;
+
+  const respLangModalTitle = document.querySelector("#resp-lang-other-modal .modal-title");
+  if (respLangModalTitle) respLangModalTitle.textContent = t.modalRespLangTitle;
+  const respLangModalSub = document.querySelector("#resp-lang-other-modal .modal-sub");
+  if (respLangModalSub) respLangModalSub.textContent = t.modalRespLangSub;
+  const respLangInputEl = document.getElementById("resp-lang-other-input");
+  if (respLangInputEl) respLangInputEl.placeholder = t.modalRespLangPlaceholder;
+  const btnRespLangCancel = document.getElementById("btn-resp-lang-other-cancel");
+  if (btnRespLangCancel) btnRespLangCancel.textContent = t.modalRespLangCancel;
+  const btnRespLangConfirm = document.getElementById("btn-resp-lang-other-confirm");
+  if (btnRespLangConfirm) btnRespLangConfirm.textContent = t.modalRespLangConfirm;
+
+  const toneModalTitle = document.querySelector("#tone-modal .modal-title");
+  if (toneModalTitle) toneModalTitle.textContent = t.modalToneTitle;
+  const toneModalSub = document.querySelector("#tone-modal .modal-sub");
+  if (toneModalSub) toneModalSub.textContent = t.modalToneSub;
+  const btnToneApply = document.getElementById("btn-tone-apply");
+  if (btnToneApply) btnToneApply.textContent = t.modalToneApply;
+  const btnToneCancel = document.getElementById("btn-tone-cancel");
+  if (btnToneCancel) btnToneCancel.textContent = t.modalToneCancel;
+
+  // ── Theme / Tone stag buttons ─────────────────────────────────────────────────
+  document.querySelectorAll("#theme-btns .stag").forEach(b => {
+    if (b.dataset.themeVal === "dark")  b.textContent = t.themeDark;
+    if (b.dataset.themeVal === "light") b.textContent = t.themeLight;
+  });
+  document.querySelectorAll("#tone-btns .stag").forEach(b => {
+    if (b.dataset.tone === "neutral") b.textContent = t.toneNeutral;
+    if (b.dataset.tone === "formal")  b.textContent = t.toneFormal;
+    if (b.dataset.tone === "casual")  b.textContent = t.toneCasual;
+  });
+
+  // ── Categories / Tabs ─────────────────────────────────────────────────────────
+  CATEGORIES.forEach((c, i) => { if (t.categories[i]) c.label = t.categories[i]; });
+  if (typeof renderTabs === "function") renderTabs();
+
+  // ── Tone names/descs ─────────────────────────────────────────────────────────
+  TONES.forEach((tn, i) => {
+    if (t.toneNames[i]) tn.name = t.toneNames[i];
+    if (t.toneDescs[i]) tn.desc = t.toneDescs[i];
+  });
+
+  // ── Prompt names/descs ───────────────────────────────────────────────────────
+  PROMPTS.forEach(p => {
+    if (p.cat !== "tones") {
+      if (t.promptNames[p.id]) p.name = t.promptNames[p.id];
+      if (t.promptDescs[p.id]) p.desc = t.promptDescs[p.id];
+    } else {
+      const idx = TONE_IDS.indexOf(p.id);
+      if (idx >= 0) {
+        if (t.toneNames[idx]) p.name = t.toneNames[idx];
+        if (t.toneDescs[idx]) p.desc = t.toneDescs[idx];
+      }
+    }
+  });
+
+  if (typeof renderPrompts === "function") renderPrompts();
+  if (typeof renderToneStrip === "function") renderToneStrip();
+
+  // Refresh profile & apikey UI with translated strings
+  if (typeof loadProfileUI === "function") loadProfileUI();
+  if (typeof loadApiKeyUI === "function") loadApiKeyUI();
+
+  // ── Restore active states ─────────────────────────────────────────────────────
+  document.querySelectorAll("#lang-btns .stag").forEach(b =>
+    b.classList.toggle("active", b.dataset.lang === lang));
+  document.querySelectorAll("#tone-btns .stag").forEach(b =>
+    b.classList.toggle("active", b.dataset.tone === tone));
+}
+
+document.getElementById("btn-ui-lang").addEventListener("click", () =>
+  uiLangModal.classList.add("open"));
+
+document.getElementById("ui-lang-list").addEventListener("click", e => {
+  const v = e.target.dataset.uiLang;
+  if (v) { applyUiLang(v); uiLangModal.classList.remove("open"); showToast("🌐 Idioma de interfaz: " + (UI_LANG_FLAGS[v]||"") + " " + (UI_LANG_LABELS[v]||v)); }
+});
+
+document.getElementById("btn-ui-lang-cancel").addEventListener("click", () =>
+  uiLangModal.classList.remove("open"));
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function renderTabs() {
+  tabsEl.innerHTML = "";
+  CATEGORIES.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (c.id === currentCategory ? " active" : "");
+    btn.textContent = c.label;
+    btn.addEventListener("click", () => { currentCategory = c.id; renderTabs(); renderPrompts(); });
+    tabsEl.appendChild(btn);
+  });
+}
+
+function renderPrompts() {
+  const filtered = (currentCategory === "all" ? PROMPTS : PROMPTS.filter(p => p.cat === currentCategory)).filter(p => p.cat !== "_hidden");
+  promptsGrid.innerHTML = "";
+  filtered.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "prompt-card";
+    card.innerHTML = `<span class="prompt-emoji">${p.emoji}</span><span class="prompt-name">${p.name}</span><span class="prompt-desc">${p.desc}</span>`;
+    card.addEventListener("click", () => runPrompt(p.id));
+    promptsGrid.appendChild(card);
+  });
+}
+
+// ─── FILE ─────────────────────────────────────────────────────────────────────
+fileZone.addEventListener("dragover",  e => { e.preventDefault(); fileZone.classList.add("hover"); });
+fileZone.addEventListener("dragleave", () => fileZone.classList.remove("hover"));
+fileZone.addEventListener("drop", e => { e.preventDefault(); fileZone.classList.remove("hover"); const f=e.dataTransfer.files[0]; if(f) processFile(f); });
+fileInput.addEventListener("change", e => { const f=e.target.files[0]; if(f) processFile(f); fileInput.value=""; });
+document.getElementById("btn-file-remove").addEventListener("click", () => { attachedFile=null; updateFileUI(); });
+
+function updateFileUI() {
+  const has = !!attachedFile;
+  fileZone.style.display       = has ? "none" : "";
+  fileAttachedEl.style.display = has ? "flex" : "none";
+  docPanel.style.display       = has ? ""     : "none";
+  promptsSection.style.display = has ? "none" : "";
+  inputLabel.textContent = has ? "Tu texto (opcional)" : "Tu texto";
+  if (has) {
+    document.getElementById("file-attached-icon").textContent = attachedFile.type==="pdf" ? "📄" : "🖼️";
+    document.getElementById("file-attached-name").textContent = attachedFile.name;
+    document.getElementById("file-attached-meta").textContent = `${attachedFile.type==="pdf"?"PDF":"Imagen"} · ${Math.round(attachedFile.size/1024)} KB · Listo ✓`;
+  }
+}
+
+async function processFile(file) {
+  if (file.size > 10*1024*1024) { showToast("❌ Archivo muy grande (máx 10MB)"); return; }
+  showToast("⏳ Procesando archivo...");
+  try {
+    if (file.type === "application/pdf") {
+      if (!window.pdfjsLib) { showToast("❌ PDF.js no disponible"); return; }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      const buf = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+      let extracted = "";
+      for (let i=1; i<=Math.min(pdf.numPages,10); i++) {
+        const page = await pdf.getPage(i);
+        const c = await page.getTextContent();
+        extracted += c.items.map(x=>x.str).join(" ") + "\n";
+      }
+      attachedFile = { name:file.name, type:"pdf", size:file.size, extractedText:extracted.trim(), base64:null, mediaType:null };
+      showToast(getT().toastFilePdf);
+    } else if (file.type.startsWith("image/")) {
+      const b64 = await new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
+      attachedFile = { name:file.name, type:"image", size:file.size, extractedText:null, base64:b64, mediaType:file.type };
+      showToast(getT().toastFileImg);
+    } else { showToast(getT().toastFileError); return; }
+    updateFileUI();
+  } catch { showToast(getT().toastFileReadError); }
+}
+
+// ─── OUTPUT LANG HELPER ───────────────────────────────────────────────────────
+const LANG_NAMES = { es:"Spanish", en:"English", de:"German", fr:"French", it:"Italian", pt:"Portuguese", zh:"Chinese", ja:"Japanese", ko:"Korean" };
+
+function getLangInstruction() {
+  if (lang === "auto") return "";
+  if (lang.startsWith("other:")) return lang.slice(6);
+  return LANG_NAMES[lang] || lang;
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+function getApiKey() { return localStorage.getItem("keyai_apikey") || ""; }
+
+async function callClaude(messages, systemExtra = "") {
+  const apiKey = getApiKey();
+  const headers = { "Content-Type": "application/json", "anthropic-version": "2023-06-01" };
+  if (apiKey) {
+    headers["x-api-key"] = apiKey;
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+  }
+  // Build profile context as a system-level instruction (silent, no self-introduction)
+  let systemParts = [];
+  if (userProfile.gender === "male") {
+    systemParts.push("CONTEXTO DEL USUARIO: Es hombre" + (userProfile.name ? `, se llama ${userProfile.name}` : "") + ". Cuando el texto o la tarea lo requiera (por ejemplo al redactar en primera persona por él, al dirigirte a él, o al usar adjetivos/pronombres), usa género masculino. No te presentes, no menciones su nombre a menos que la tarea lo pida explícitamente.");
+  } else if (userProfile.gender === "female") {
+    systemParts.push("CONTEXTO DEL USUARIO: Es mujer" + (userProfile.name ? `, se llama ${userProfile.name}` : "") + ". Cuando el texto o la tarea lo requiera (por ejemplo al redactar en primera persona por ella, al dirigirte a ella, o al usar adjetivos/pronombres), usa género femenino. No te presentes, no menciones su nombre a menos que la tarea lo pida explícitamente.");
+  } else if (userProfile.name) {
+    systemParts.push(`CONTEXTO DEL USUARIO: Se llama ${userProfile.name}. No lo menciones a menos que la tarea lo requiera explícitamente.`);
+  }
+  // OUTPUT LANGUAGE — mandatory, regardless of input language or UI language
+  const outputLangName = getLangInstruction();
+  if (outputLangName) {
+    systemParts.push(`CRITICAL OUTPUT LANGUAGE RULE: You MUST write your entire response in ${outputLangName}. This applies no matter what language the user's text is written in and no matter what language the instructions are in. Do NOT use any other language in your response. The output language is ${outputLangName}.`);
+  }
+  if (systemExtra) systemParts.push(systemExtra);
+  const body = { model:"claude-sonnet-4-6", max_tokens:1500, messages };
+  if (systemParts.length) body.system = systemParts.join(" ");
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Error " + res.status);
+  return data.content?.map(b => b.text||"").join("") || "";
+}
+
+function setLoadingState(active, label="") {
+  loading = active;
+  loadingCard.style.display = active ? "flex" : "none";
+  loadingLabelText.textContent = label;
+}
+function showResult(label, text) {
+  resultData = { label, text };
+  resultLabelText.textContent = label;
+  resultText.textContent = text;
+  resultCard.style.display = "";
+}
+function hideResult() {
+  resultCard.style.display="none"; resultData=null;
+  const ac = document.getElementById("master-analysis-card");
+  if (ac) ac.remove();
+}
+function hideError()  { errorCard.style.display="none"; }
+function showError(msg){ errorTitle.textContent="❌ "+msg; errorCard.style.display=""; }
+
+function saveHistory(name, emoji, input, output) {
+  const entry = { id:Date.now(), promptName:name, promptEmoji:emoji, input:String(input).slice(0,200), output, time:new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}) };
+  appHistory = [entry,...appHistory].slice(0,50);
+  try { localStorage.setItem("keyai_history", JSON.stringify(appHistory)); } catch {}
+}
+
+// ─── MASTER AI ────────────────────────────────────────────────────────────────
+async function runMasterAI() {
+  const txt = textInput.value.trim();
+  if (!txt) { showToast(getT().toastNoText); return; }
+  if (loading) return;
+  setLoadingState(true, "🚀 MASTER — Analizando y optimizando…");
+  hideResult(); hideError(); scrollMainTop();
+  lastPromptId = "master_ai"; lastInputText = txt;
+  const toneNote = tone==="formal" ? " Usa tono formal." : tone==="casual" ? " Usa tono casual." : "";
+  const langName = getLangInstruction() || "español";
+  const masterPrompt = `Eres un experto MASTER en ventas, negociación y psicología de la persuasión. Analiza la siguiente conversación/texto y ejecuta TODOS estos pasos de forma integral:
+
+1. DETECTA automáticamente en qué ETAPA de la venta/negociación estás (prospección, presentación, manejo de objeciones, negociación de precio, cierre, postventa, etc.)
+2. Identifica el contexto emocional del cliente
+3. Decide QUÉ TÉCNICA aplicar en este momento exacto
+4. CONVIERTE toda voz pasiva a voz activa (la voz activa es más directa y persuasiva en ventas)
+5. Aplica disparadores de neuroventas donde corresponda
+6. Redacta el texto perfecto, en voz activa, para avanzar en la venta${toneNote}
+
+Responde en ${langName} SOLO en JSON sin markdown ni texto extra: {
+  "texto_mejorado": "el texto perfecto listo para enviar, en voz activa y con técnicas de persuasión aplicadas",
+  "cambios": [
+    "📍 Etapa detectada: [etapa]",
+    "🧠 Estado emocional del cliente: [análisis]",
+    "🎯 Técnica aplicada: [técnica y por qué]",
+    "⚡ Voz activa: [número de oraciones corregidas de pasiva a activa]",
+    "🧲 Neuroventas aplicadas: [disparadores usados]",
+    "🔜 Próximo paso sugerido: [acción concreta]"
+  ]
+}
+
+Contexto: """${txt}"""`;
+  try {
+    const raw = await callClaude([{ role:"user", content: masterPrompt }]);
+    let parsed;
+    try {
+      const clean = raw.replace(/```json|```/g,"").trim();
+      parsed = JSON.parse(clean);
+    } catch {
+      // fallback: show raw as plain result
+      showResult("🚀 MASTER — IA detecta etapa", raw);
+      saveHistory("MASTER — IA detecta etapa", "🚀", txt, raw);
+      setLoadingState(false);
+      return;
+    }
+    const textoMejorado = parsed.texto_mejorado || "";
+    const cambios = parsed.cambios || [];
+
+    // Show text in main result card
+    showResult("🚀 MASTER — IA detecta etapa", textoMejorado);
+    saveHistory("MASTER — IA detecta etapa", "🚀", txt, textoMejorado + (cambios.length ? "\n\n" + cambios.join("\n") : ""));
+
+    // Inject analysis card after result card
+    const existing = document.getElementById("master-analysis-card");
+    if (existing) existing.remove();
+    if (cambios.length) {
+      const analysisCard = document.createElement("div");
+      analysisCard.id = "master-analysis-card";
+      analysisCard.className = "master-analysis-card";
+      analysisCard.innerHTML = `
+        <div class="master-analysis-label"><div class="dot" style="background:var(--green)"></div>Análisis MASTER</div>
+        <div class="master-analysis-list">${cambios.map(c=>`<div class="master-analysis-item">${c}</div>`).join("")}</div>
+        <button class="btn-copy-analysis" id="btn-copy-analysis">📋 Copiar análisis</button>
+      `;
+      resultCard.after(analysisCard);
+      document.getElementById("btn-copy-analysis").addEventListener("click", function() {
+        const fullText = cambios.join("\n");
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(fullText).then(() => {
+            this.textContent = "✓ ¡Copiado!";
+            setTimeout(() => { this.textContent = "📋 Copiar análisis"; }, 2000);
+          }).catch(() => fallbackCopy(fullText, this));
+        } else { fallbackCopy(fullText, this); }
+      });
+    }
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+}
+
+function fallbackCopy(text, btn) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); btn.textContent = "✓ ¡Copiado!"; setTimeout(() => { btn.textContent = "📋 Copiar análisis"; }, 2000); } catch {}
+  document.body.removeChild(ta);
+}
+
+async function runPrompt(promptId) {
+  if (promptId==="master_ai") { runMasterAI(); return; }
+  if (promptId==="to_other") { langModal.classList.add("open"); customLangInput.focus(); return; }
+  const txt = textInput.value.trim();
+  if (!txt) { showToast(getT().toastNoText); return; }
+  if (loading) return;
+  const p = PROMPTS.find(x=>x.id===promptId);
+  if (!p) return;
+  setLoadingState(true, `${p.emoji} ${p.name}`);
+  hideResult(); hideError(); scrollMainTop();
+  lastPromptId = promptId; lastInputText = txt;
+  const toneNote = tone==="formal" ? " Usa tono formal." : tone==="casual" ? " Usa tono casual." : "";
+  try {
+    const out = await callClaude([{ role:"user", content: p.instruction + toneNote + "\n\n" + txt }]);
+    showResult(`${p.emoji} ${p.name}`, out);
+    saveHistory(p.name, p.emoji, txt, out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+}
+
+async function runCustomLang() {
+  const l = customLangInput.value.trim();
+  if (!l) return;
+  langModal.classList.remove("open");
+  const txt = textInput.value.trim();
+  if (!txt) { showToast(getT().toastNoTextShort); return; }
+  if (loading) return;
+  customLangInput.value = "";
+  setLoadingState(true, `🌐 Al ${l}`);
+  hideResult(); hideError(); scrollMainTop();
+  try {
+    const out = await callClaude([{ role:"user", content:`Traduce este texto al ${l} de manera natural y fluida. Solo devuelve la traducción:\n\n${txt}` }]);
+    showResult(`🌐 Al ${l}`, out);
+    saveHistory(`Al ${l}`, "🌐", txt, out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+}
+
+async function runDocPrompt(type) {
+  if (!attachedFile) { showToast(getT().toastNoFile); return; }
+  if (loading) return;
+  const labels = { ventajas:"💎 Ventajas y Beneficios", pitch:"🎯 Pitch de Venta", whatsapp:"💬 WhatsApp", social:"📱 Post Redes", objeciones:"🛡️ Objeciones", resumen:"📋 Ficha Comercial", master:"🚀 MASTER" };
+  const label = labels[type] || type;
+  setLoadingState(true, label);
+  hideResult(); hideError(); scrollMainTop();
+  const extra = textInput.value.trim();
+  try {
+    let messages;
+    if (attachedFile.type==="image") {
+      messages = [{ role:"user", content:[
+        { type:"image", source:{ type:"base64", media_type:attachedFile.mediaType, data:attachedFile.base64 } },
+        { type:"text",  text: DOC_PROMPTS[type] + (extra ? "\n\nInformación adicional: "+extra : "\n\n(Extrae toda la información visible en la imagen)") }
+      ]}];
+    } else {
+      messages = [{ role:"user", content: DOC_PROMPTS[type] + "\n\n" + attachedFile.extractedText + (extra ? "\n\nInformación adicional: "+extra : "") }];
+    }
+    const out = await callClaude(messages);
+    showResult(label, out);
+    saveHistory(label, "🚀", attachedFile.name, out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+function renderHistory() {
+  historyList.innerHTML = "";
+  if (appHistory.length === 0) {
+    const t = getT();
+    historyList.innerHTML = `<div class="empty-state"><div style="font-size:40px">📭</div><p>${t.noHistory}</p></div>`;
+    return;
+  }
+  appHistory.slice(0,20).forEach(h => {
+    const el = document.createElement("div");
+    el.className = "hist-item";
+    el.innerHTML = `<div class="hist-meta"><span class="hist-tag">${h.promptEmoji} ${h.promptName}</span><span class="hist-time">${h.time}</span></div><div class="hist-preview">${h.output.slice(0,120)}${h.output.length>120?"…":""}</div>`;
+    el.addEventListener("click", () => {
+      textInput.value = h.input;
+      charCount.textContent = h.input.length + " " + getT().charUnit;
+      showResult(`${h.promptEmoji} ${h.promptName}`, h.output);
+      setView("main");
+    });
+    historyList.appendChild(el);
+  });
+}
+
+document.getElementById("btn-clear-history").addEventListener("click", () => {
+  const t = getT();
+  if (confirm(t.confirmClearHistory)) {
+    appHistory = [];
+    localStorage.removeItem("keyai_history");
+    showToast(t.toastCleared);
+    if (currentView==="history") renderHistory();
+  }
+});
+
+// ─── SETTINGS: LANG / TONE ────────────────────────────────────────────────────
+document.getElementById("lang-btns").addEventListener("click", e => {
+  const v = e.target.dataset.lang;
+  if (!v) return;
+  lang = v;
+  localStorage.setItem("keyai_lang", v);
+  document.querySelectorAll("#lang-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.lang===v));
+});
+
+document.getElementById("tone-btns").addEventListener("click", e => {
+  const v = e.target.dataset.tone;
+  if (!v) return;
+  tone = v;
+  localStorage.setItem("keyai_tone", v);
+  document.querySelectorAll("#tone-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.tone===v));
+});
+
+// ─── PROFILE ──────────────────────────────────────────────────────────────────
+function loadProfileUI() {
+  const { name, gender } = userProfile;
+  const t = getT();
+  document.getElementById("profile-name-input").value = name || "";
+  document.getElementById("profile-btn-male").classList.toggle("active", gender === "male");
+  document.getElementById("profile-btn-female").classList.toggle("active", gender === "female");
+  const avatarEl = document.getElementById("profile-avatar");
+  const nameEl   = document.getElementById("profile-name-display");
+  const genderEl = document.getElementById("profile-gender-display");
+  if (gender === "male")   { avatarEl.textContent = "🧑"; genderEl.textContent = t.profileGenderMale; }
+  else if (gender === "female") { avatarEl.textContent = "👩"; genderEl.textContent = t.profileGenderFemale; }
+  else { avatarEl.textContent = "🙋"; genderEl.textContent = t.profileGenderNone; }
+  nameEl.textContent = name ? name : t.profileTitle;
+}
+
+document.getElementById("profile-btn-male").addEventListener("click", () => {
+  userProfile.gender = userProfile.gender === "male" ? "" : "male";
+  document.getElementById("profile-btn-male").classList.toggle("active", userProfile.gender === "male");
+  document.getElementById("profile-btn-female").classList.remove("active");
+});
+document.getElementById("profile-btn-female").addEventListener("click", () => {
+  userProfile.gender = userProfile.gender === "female" ? "" : "female";
+  document.getElementById("profile-btn-female").classList.toggle("active", userProfile.gender === "female");
+  document.getElementById("profile-btn-male").classList.remove("active");
+});
+document.getElementById("btn-save-profile").addEventListener("click", () => {
+  userProfile.name = document.getElementById("profile-name-input").value.trim();
+  localStorage.setItem("keyai_profile", JSON.stringify(userProfile));
+  loadProfileUI();
+  showToast(getT().toastProfileSaved);
+});
+
+// ─── API KEY ──────────────────────────────────────────────────────────────────
+function loadApiKeyUI() {
+  const saved = getApiKey();
+  const t = getT();
+  const dot  = document.getElementById("apikey-dot");
+  const txt  = document.getElementById("apikey-status-text");
+  const inp  = document.getElementById("apikey-input");
+  if (saved) {
+    dot.classList.add("has-key");
+    txt.textContent = t.apikeyHasSaved + ` (···${saved.slice(-4)})`;
+    inp.placeholder = "sk-ant-api03-••••" + saved.slice(-4);
+  } else {
+    dot.classList.remove("has-key");
+    txt.textContent = t.apikeyNoKey;
+    inp.placeholder = "sk-ant-api03-...";
+  }
+  inp.value = "";
+}
+
+// Toggle show/hide key
+document.getElementById("btn-apikey-eye").addEventListener("click", () => {
+  const inp = document.getElementById("apikey-input");
+  inp.type = inp.type === "password" ? "text" : "password";
+});
+
+document.getElementById("btn-save-apikey").addEventListener("click", () => {
+  const val = document.getElementById("apikey-input").value.trim();
+  if (!val) { showToast(getT().toastApiKeyRequired); return; }
+  if (!val.startsWith("sk-ant-")) { showToast(getT().toastApiKeyInvalid); return; }
+  localStorage.setItem("keyai_apikey", val);
+  loadApiKeyUI();
+  showToast(getT().toastApiKeySaved);
+});
+
+document.getElementById("btn-del-apikey").addEventListener("click", () => {
+  localStorage.removeItem("keyai_apikey");
+  loadApiKeyUI();
+  showToast(getT().toastApiKeyDeleted);
+});
+
+// ─── HEADER ───────────────────────────────────────────────────────────────────
+document.getElementById("btn-history").addEventListener("click",  () => setView(currentView==="history"  ? "main" : "history"));
+document.getElementById("btn-settings").addEventListener("click", () => setView(currentView==="settings" ? "main" : "settings"));
+document.getElementById("btn-history-back").addEventListener("click",  () => setView("main"));
+document.getElementById("btn-settings-back").addEventListener("click", () => setView("main"));
+
+// ─── MAIN CONTROLS ────────────────────────────────────────────────────────────
+textInput.addEventListener("input", () => charCount.textContent = textInput.value.length + " " + getT().charUnit);
+textInput.addEventListener("focus", () => inputCard.classList.add("focused"));
+textInput.addEventListener("blur",  () => inputCard.classList.remove("focused"));
+
+document.getElementById("btn-clear").addEventListener("click", () => {
+  textInput.value=""; charCount.textContent="0 " + getT().charUnit;
+  hideResult(); hideError(); attachedFile=null; updateFileUI();
+});
+
+document.getElementById("btn-quick-reply").addEventListener("click", () => {
+  runPrompt("reply");
+});
+
+document.getElementById("btn-copy").addEventListener("click", () => {
+  if (!resultData) return;
+  const text = resultData.text;
+
+  // Try modern clipboard API first
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast(getT().toastCopied))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+});
+
+function fallbackCopy(text) {
+  // Create a temporary textarea, select all, execCommand copy
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;box-shadow:none;background:transparent;opacity:0;";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, text.length); // iOS needs this
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch {}
+  document.body.removeChild(ta);
+  if (ok) {
+    showToast(getT().toastCopied);
+  } else {
+    // Last resort: show the text selected so user can copy manually
+    showToast(getT().toastHoldToCopy);
+  }
+}
+
+document.getElementById("btn-redo").addEventListener("click", async () => {
+  if (!lastPromptId || !lastInputText) return;
+  if (loading) return;
+  const p = PROMPTS.find(x=>x.id===lastPromptId);
+  if (!p) return;
+  setLoadingState(true, `${p.emoji} ${p.name}`);
+  hideResult(); hideError(); scrollMainTop();
+  const toneNote = tone==="formal" ? " Usa tono formal." : tone==="casual" ? " Usa tono casual." : "";
+  try {
+    const out = await callClaude([{ role:"user", content: p.instruction + toneNote + "\n\n" + lastInputText }]);
+    showResult(`${p.emoji} ${p.name}`, out);
+    saveHistory(p.name, p.emoji, lastInputText, out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+});
+
+document.getElementById("btn-replace").addEventListener("click", () => {
+  if (!resultData) return;
+  textInput.value = resultData.text;
+  charCount.textContent = resultData.text.length + " " + getT().charUnit;
+  hideResult(); showToast(getT().toastLoaded);
+});
+
+document.getElementById("btn-humanize").addEventListener("click", async () => {
+  if (!resultData) return;
+  if (loading) return;
+  const txt = resultData.text;
+  const p = TONES.find(x => x.id === "tone_humanize");
+  setLoadingState(true, "🫀 Humanizar");
+  hideResult(); hideError(); scrollMainTop();
+  lastPromptId = "tone_humanize"; lastInputText = txt;
+  const toneNote = tone==="formal" ? " Usa tono formal." : tone==="casual" ? " Usa tono casual." : "";
+  try {
+    const out = await callClaude([{ role:"user", content: p.instruction + toneNote + "\n\n" + txt }]);
+    showResult("🫀 Humanizar", out);
+    saveHistory("Humanizar", "🫀", txt, out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+});
+
+document.getElementById("doc-grid").addEventListener("click", e => {
+  const btn = e.target.closest("[data-doc]");
+  if (btn) runDocPrompt(btn.dataset.doc);
+});
+
+// ─── RESP LANG OTHER ─────────────────────────────────────────────────────────
+const respLangOtherModal = document.getElementById("resp-lang-other-modal");
+const respLangOtherInput = document.getElementById("resp-lang-other-input");
+
+document.getElementById("btn-lang-resp-other").addEventListener("click", () => {
+  respLangOtherModal.style.display = "flex";
+  respLangOtherInput.focus();
+});
+document.getElementById("btn-resp-lang-other-cancel").addEventListener("click", () => {
+  respLangOtherModal.style.display = "none"; respLangOtherInput.value = "";
+});
+document.getElementById("btn-resp-lang-other-confirm").addEventListener("click", () => {
+  const v = respLangOtherInput.value.trim();
+  if (!v) return;
+  lang = "other:" + v;
+  localStorage.setItem("keyai_lang", lang);
+  document.querySelectorAll("#lang-btns .stag").forEach(b => b.classList.remove("active"));
+  document.getElementById("btn-lang-resp-other").classList.add("active");
+  document.getElementById("lang-resp-other-hint").textContent = v;
+  respLangOtherModal.style.display = "none"; respLangOtherInput.value = "";
+  showToast("✅ Idioma de respuesta: " + v);
+});
+respLangOtherInput.addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("btn-resp-lang-other-confirm").click(); });
+respLangOtherModal.addEventListener("click", e => { if(e.target===respLangOtherModal){ respLangOtherModal.style.display="none"; respLangOtherInput.value=""; } });
+
+// ─── UI LANG OTHER ────────────────────────────────────────────────────────────
+const uiLangOtherModal = document.getElementById("ui-lang-other-modal");
+const uiLangOtherInput = document.getElementById("ui-lang-other-input");
+
+document.getElementById("btn-ui-lang-other").addEventListener("click", () => {
+  uiLangOtherModal.style.display = "flex";
+  uiLangOtherInput.focus();
+});
+document.getElementById("btn-ui-lang-other-cancel").addEventListener("click", () => {
+  uiLangOtherModal.style.display = "none"; uiLangOtherInput.value = "";
+});
+document.getElementById("btn-ui-lang-other-confirm").addEventListener("click", () => {
+  const v = uiLangOtherInput.value.trim();
+  if (!v) return;
+  applyUiLang("other:" + v);
+  uiLangModal.classList.remove("open");
+  uiLangOtherModal.style.display = "none"; uiLangOtherInput.value = "";
+  showToast("🌐 Idioma de interfaz: " + v);
+});
+uiLangOtherInput.addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("btn-ui-lang-other-confirm").click(); });
+uiLangOtherModal.addEventListener("click", e => { if(e.target===uiLangOtherModal){ uiLangOtherModal.style.display="none"; uiLangOtherInput.value=""; } });
+
+// ─── TRANSLATE MODAL ──────────────────────────────────────────────────────────
+document.getElementById("btn-lang-cancel").addEventListener("click",  () => { langModal.classList.remove("open"); customLangInput.value=""; });
+document.getElementById("btn-lang-confirm").addEventListener("click", runCustomLang);
+customLangInput.addEventListener("keydown", e => { if(e.key==="Enter") runCustomLang(); });
+langModal.addEventListener("click", e => { if(e.target===langModal) { langModal.classList.remove("open"); customLangInput.value=""; } });
+
+// ─── TONE QUICK-ACCESS ────────────────────────────────────────────────────────
+function renderToneStrip() {
+  const strip = document.getElementById("tone-strip");
+  strip.innerHTML = "";
+  TONES.forEach(t => {
+    const chip = document.createElement("button");
+    chip.className = "tone-chip" + (activeToneId === t.id ? " active" : "");
+    chip.dataset.toneId = t.id;
+    chip.textContent = t.emoji + " " + t.name;
+    chip.addEventListener("click", () => applyToneToInput(t.id));
+    strip.appendChild(chip);
+  });
+}
+
+async function applyToneToInput(toneId) {
+  const txt = textInput.value.trim();
+  if (!txt) { showToast(getT().toastNoTextShort); return; }
+  if (loading) return;
+  const t = TONES.find(x => x.id === toneId);
+  if (!t) return;
+  activeToneId = toneId;
+  renderToneStrip();
+  setLoadingState(true, `${t.emoji} ${t.name}`);
+  hideResult(); hideError(); scrollMainTop();
+  lastPromptId = toneId; lastInputText = txt;
+  try {
+    const out = await callClaude([{ role:"user", content: t.instruction + "\n\n" + txt }]);
+    showResult(`${t.emoji} ${t.name}`, out);
+    saveHistory(t.name, t.emoji, txt, out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+}
+
+// Tone modal (for "Cambiar tono" on result card)
+let toneModalSelectedId = null;
+
+function openToneModal() {
+  toneModalSelectedId = null;
+  const grid = document.getElementById("tone-modal-grid");
+  grid.innerHTML = "";
+  TONES.forEach(t => {
+    const btn = document.createElement("button");
+    btn.className = "tone-modal-btn";
+    btn.dataset.toneId = t.id;
+    btn.innerHTML = `<div class="tone-modal-emoji">${t.emoji}</div><div class="tone-modal-name">${t.name}</div><div class="tone-modal-desc">${t.desc}</div>`;
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tone-modal-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      toneModalSelectedId = t.id;
+      document.getElementById("btn-tone-apply").disabled = false;
+    });
+    grid.appendChild(btn);
+  });
+  document.getElementById("btn-tone-apply").disabled = true;
+  document.getElementById("tone-modal").classList.add("open");
+}
+
+document.getElementById("btn-tone-result").addEventListener("click", () => {
+  if (!resultData) return;
+  openToneModal();
+});
+
+document.getElementById("btn-tone-cancel").addEventListener("click", () => {
+  document.getElementById("tone-modal").classList.remove("open");
+});
+
+document.getElementById("tone-modal").addEventListener("click", e => {
+  if (e.target === document.getElementById("tone-modal")) {
+    document.getElementById("tone-modal").classList.remove("open");
+  }
+});
+
+document.getElementById("btn-tone-apply").addEventListener("click", async () => {
+  if (!toneModalSelectedId || !resultData) return;
+  if (loading) return;
+  const t = TONES.find(x => x.id === toneModalSelectedId);
+  if (!t) return;
+  document.getElementById("tone-modal").classList.remove("open");
+  const textToRewrite = resultData.text;
+  setLoadingState(true, `${t.emoji} ${t.name}`);
+  hideResult(); hideError(); scrollMainTop();
+  try {
+    const out = await callClaude([{ role:"user", content: t.instruction + "\n\n" + textToRewrite }]);
+    showResult(`${t.emoji} ${t.name}`, out);
+    saveHistory(t.name, t.emoji, textToRewrite.slice(0,200), out);
+  } catch(e) { showError(e.message); }
+  setLoadingState(false);
+});
+
+// ─── QUICK SEARCH ─────────────────────────────────────────────────────────────
+(function() {
+  const searchInput   = document.getElementById("quick-search");
+  const clearBtn      = document.getElementById("search-clear-btn");
+  const resultsPanel  = document.getElementById("search-results-panel");
+  const promptsSection = document.getElementById("prompts-section");
+
+  // ── Build unified search pool from PROMPTS + TONES (deduplicated by id)
+  function buildPool() {
+    const seen = new Set();
+    const pool = [];
+    // Add PROMPTS first (they have cat context)
+    PROMPTS.forEach(p => {
+      if (!seen.has(p.id)) { seen.add(p.id); pool.push(p); }
+    });
+    // Add TONES that aren't already in pool
+    TONES.forEach(t => {
+      if (!seen.has(t.id)) { seen.add(t.id); pool.push({ ...t, cat: "tones" }); }
+    });
+    return pool;
+  }
+
+  // ── Score: how well does 'query' match an item?
+  // Returns a number: higher = better match. 0 = no match.
+  function score(item, q) {
+    const fields = [
+      (item.name  || "").toLowerCase(),
+      (item.desc  || "").toLowerCase(),
+      (item.id    || "").toLowerCase(),
+    ];
+    // Exact name match → top score
+    if (fields[0] === q) return 100;
+    // Name starts with query
+    if (fields[0].startsWith(q)) return 80;
+    // Any field starts with query
+    if (fields.some(f => f.startsWith(q))) return 60;
+    // Name includes query
+    if (fields[0].includes(q)) return 50;
+    // Any field includes query
+    if (fields.some(f => f.includes(q))) return 35;
+    // Token-level: any word in any field starts with any query token
+    const qTokens = q.split(/\s+/).filter(Boolean);
+    const allText = fields.join(" ");
+    const wordMatches = qTokens.filter(tok => allText.includes(tok)).length;
+    if (wordMatches === qTokens.length) return 25;
+    if (wordMatches > 0) return 10;
+    return 0;
+  }
+
+  // ── Recommendation pool: items semantically related by keyword clusters
+  const KEYWORD_MAP = [
+    { keys: ["humor","gracioso","funny","chiste","broma","risas","ligero","divertido"], ids: ["tone_funny","tone_witty","tone_sarcastic","add_emojis"] },
+    { keys: ["urgente","urge","rapido","rápido","inmediato","ahora","prisa","emergencia","deadline"], ids: ["tone_urgent","cta","pitch","hook"] },
+    { keys: ["formal","profesional","serio","corporativo","oficial","business","empresa"], ids: ["tone_formal","formal","email","tone_diplomatic"] },
+    { keys: ["corto","breve","conciso","resumir","resumido","sintético","menos palabras"], ids: ["shorter","tone_minimal","summary","tweet"] },
+    { keys: ["expandir","largo","detallado","ampliar","más información","profundo"], ids: ["expand","detailed","tone_engaging","tone_storytelling"] },
+    { keys: ["amor","romántico","sentimiento","cariño","afecto","pareja","ternura","corazón"], ids: ["tone_romantic","tone_compassionate","tone_empathetic","tone_flirty"] },
+    { keys: ["vender","venta","cliente","persuadir","convencer","comprar","oferta","producto"], ids: ["pitch","cta","benefits","objections","ad_copy","followup","value_prop","master_ai"] },
+    { keys: ["redes","social","instagram","facebook","linkedin","twitter","tiktok","publicar"], ids: ["social_post","tweet","threads","hook","caption","add_emojis"] },
+    { keys: ["traducir","traducción","idioma","language","english","español","francés","portugués"], ids: ["to_english","to_spanish","to_french","to_portuguese","to_italian","to_other"] },
+    { keys: ["poema","poesía","verso","rima","literario","creativo","artístico"], ids: ["tone_poemify","tone_versify","tone_poetic","tone_storytelling"] },
+    { keys: ["motivar","inspirar","energía","fuerza","ánimo","empuje","impulso","confianza"], ids: ["tone_motivational","tone_confident","tone_enthusiastic","tone_assertive"] },
+    { keys: ["responder","respuesta","contestar","reply","mensaje","whatsapp","chat"], ids: ["reply","followup","tone_conversacional","detailed"] },
+    { keys: ["emojis","emoji","expresivo","visual","colorido"], ids: ["add_emojis","social_post","caption","tone_enthusiastic"] },
+    { keys: ["historia","narrar","narrativa","cuento","storytelling","relato"], ids: ["tone_storytelling","tone_nostalgic","tone_poetic","idea_to_text"] },
+    { keys: ["correo","email","mail","asunto","destinatario","bandeja"], ids: ["email","followup","reply","formal"] },
+    { keys: ["acortar","resumir","síntesis","corto","breve","compacto"], ids: ["shorter","summary","tweet","tone_minimal"] },
+    { keys: ["disculpa","perdón","apología","error","arrepentido"], ids: ["apologize","tone_empathetic","tone_diplomatic","tone_compassionate"] },
+    { keys: ["natural","humano","auténtico","real","cercano","espontáneo"], ids: ["tone_humanize","humanize","tone_conversacional","tone_casual"] },
+    { keys: ["idea","crear","generar","redactar","escribir","nuevo"], ids: ["idea_to_text","improve","rephrase","rewrite"] },
+    { keys: ["reescribir","reescritura","rewrite","nueva versión","diferente","from scratch","desde cero","otro enfoque"], ids: ["rewrite","rephrase","tone_humanize","improve","idea_to_text"] },
+  ];
+
+  function getRecommendations(q, excludeIds) {
+    const qLower = q.toLowerCase();
+    const candidateIds = new Set();
+    KEYWORD_MAP.forEach(cluster => {
+      const hit = cluster.keys.some(k => qLower.includes(k) || k.includes(qLower));
+      if (hit) cluster.ids.forEach(id => candidateIds.add(id));
+    });
+    // fallback: if no cluster matched, pick diverse top items
+    if (candidateIds.size === 0) {
+      ["tone_humanize","improve","shorter","pitch","social_post","tone_funny","tone_formal","to_english","reply","idea_to_text"]
+        .forEach(id => candidateIds.add(id));
+    }
+    const pool = buildPool();
+    return [...candidateIds]
+      .filter(id => !excludeIds.has(id))
+      .map(id => pool.find(p => p.id === id))
+      .filter(Boolean)
+      .slice(0, 5);
+  }
+
+  // ── Apply an action (prompt or tone)
+  function applyItem(item) {
+    // Is it a tone?
+    const tone = TONES.find(t => t.id === item.id);
+    if (tone) {
+      applyToneToInput(tone.id);
+    } else {
+      // Is it a prompt?
+      const prompt = PROMPTS.find(p => p.id === item.id);
+      if (prompt) runPrompt(prompt.id);
+    }
+    clearSearch();
+  }
+
+  // ── Render a single match card
+  function makeMatchCard(item, badgeText) {
+    const card = document.createElement("div");
+    card.className = "search-match-card";
+    card.innerHTML = `
+      ${badgeText ? `<div class="search-match-badge">${badgeText}</div>` : ""}
+      <div class="prompt-emoji">${item.emoji}</div>
+      <div class="prompt-name">${item.name}</div>
+      <div class="prompt-desc">${item.desc}</div>
+    `;
+    card.addEventListener("click", () => applyItem(item));
+    return card;
+  }
+
+  // ── Render a recommendation item
+  function makeRecItem(item) {
+    const el = document.createElement("div");
+    el.className = "search-rec-item";
+    el.innerHTML = `
+      <div class="search-rec-emoji">${item.emoji}</div>
+      <div class="search-rec-info">
+        <div class="search-rec-name">${item.name}</div>
+        <div class="search-rec-desc">${item.desc}</div>
+      </div>
+    `;
+    el.addEventListener("click", () => applyItem(item));
+    return el;
+  }
+
+  // ── Core render function
+  function renderSearch(q) {
+    const panel = resultsPanel;
+    panel.innerHTML = "";
+
+    if (!q) {
+      panel.classList.remove("visible");
+      promptsSection.style.display = "";
+      return;
+    }
+
+    const pool = buildPool();
+    const scored = pool
+      .map(item => ({ item, s: score(item, q) }))
+      .filter(x => x.s > 0)
+      .sort((a, b) => b.s - a.s);
+
+    panel.classList.add("visible");
+    promptsSection.style.display = "none";
+
+    if (scored.length > 0) {
+      // Show matched results grid (max 6)
+      const grid = document.createElement("div");
+      grid.className = "search-matched-grid";
+      scored.slice(0, 6).forEach(({ item }, i) => {
+        grid.appendChild(makeMatchCard(item, i === 0 ? "✦ COINCIDENCIA" : ""));
+      });
+      panel.appendChild(grid);
+
+      // If there are more results, show count hint
+      if (scored.length > 6) {
+        const hint = document.createElement("div");
+        hint.style.cssText = "font-size:11px;color:var(--faint);text-align:center;padding:2px 0 4px";
+        hint.textContent = `+${scored.length - 6} resultados más — refina tu búsqueda`;
+        panel.appendChild(hint);
+      }
+    } else {
+      // No results → show recommendation block
+      const matchedIds = new Set(scored.map(x => x.item.id));
+      const recs = getRecommendations(q, matchedIds);
+
+      const noResultsBlock = document.createElement("div");
+      noResultsBlock.className = "search-no-results";
+
+      const msg = document.createElement("div");
+      msg.className = "search-no-msg";
+      msg.innerHTML = `La acción o tono que buscas no ha sido encontrado. Te recomendamos probar estas otras acciones con una función similar:`;
+      noResultsBlock.appendChild(msg);
+
+      if (recs.length > 0) {
+        const recLabel = document.createElement("div");
+        recLabel.className = "search-rec-label";
+        recLabel.textContent = "Acciones sugeridas";
+        noResultsBlock.appendChild(recLabel);
+
+        const recList = document.createElement("div");
+        recList.className = "search-rec-list";
+        recs.forEach(item => recList.appendChild(makeRecItem(item)));
+        noResultsBlock.appendChild(recList);
+      }
+
+      panel.appendChild(noResultsBlock);
+    }
+  }
+
+  // ── Debounce
+  let debTimer = null;
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim().toLowerCase();
+    clearBtn.classList.toggle("visible", q.length > 0);
+    clearTimeout(debTimer);
+    debTimer = setTimeout(() => renderSearch(q), 120);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    clearSearch();
+    textInput.focus();
+  });
+
+  function clearSearch() {
+    searchInput.value = "";
+    clearBtn.classList.remove("visible");
+    resultsPanel.classList.remove("visible");
+    resultsPanel.innerHTML = "";
+    promptsSection.style.display = "";
+  }
+
+  // Close search when tapping outside
+  document.addEventListener("click", e => {
+    if (!document.getElementById("search-section").contains(e.target)) {
+      if (!searchInput.value.trim()) clearSearch();
+    }
+  });
+})();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+applyTheme(appTheme);
+applyUiLang(uiLang);
+// Restore lang/tone active states
+document.querySelectorAll("#lang-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.lang===lang));
+document.querySelectorAll("#tone-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.tone===tone));
+renderTabs();
+renderPrompts();
+renderToneStrip();
+updateFileUI();
+loadApiKeyUI();
+loadProfileUI();
+</script>
+</body>
+</html>
