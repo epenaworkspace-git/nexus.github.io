@@ -2717,17 +2717,9 @@ function loadApiKeyUI() {
       txt.textContent = "Sin clave configurada";
       inp.placeholder = p.placeholder;
     }
-    inp.value = "";
+    inp.value = saved || "";
     list.querySelector(`[data-eye="${p.id}"]`).addEventListener("click", () => {
-      if (inp.type === "password") {
-        // Si el campo está vacío pero ya hay una clave guardada, mostrarla
-        if (!inp.value && saved) inp.value = saved;
-        inp.type = "text";
-      } else {
-        inp.type = "password";
-        // Si lo que se ve es la clave guardada (no algo que el usuario está escribiendo), volver a vaciar el campo
-        if (inp.value === saved) inp.value = "";
-      }
+      inp.type = inp.type === "password" ? "text" : "password";
     });
     list.querySelector(`[data-save="${p.id}"]`).addEventListener("click", async () => {
       const val = inp.value.trim();
