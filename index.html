@@ -2719,7 +2719,15 @@ function loadApiKeyUI() {
     }
     inp.value = "";
     list.querySelector(`[data-eye="${p.id}"]`).addEventListener("click", () => {
-      inp.type = inp.type === "password" ? "text" : "password";
+      if (inp.type === "password") {
+        // Si el campo está vacío pero ya hay una clave guardada, mostrarla
+        if (!inp.value && saved) inp.value = saved;
+        inp.type = "text";
+      } else {
+        inp.type = "password";
+        // Si lo que se ve es la clave guardada (no algo que el usuario está escribiendo), volver a vaciar el campo
+        if (inp.value === saved) inp.value = "";
+      }
     });
     list.querySelector(`[data-save="${p.id}"]`).addEventListener("click", async () => {
       const val = inp.value.trim();
