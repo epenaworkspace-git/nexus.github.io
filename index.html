@@ -114,6 +114,7 @@
     transition: background .25s, border-color .25s;
   }
   .hdr-btn:hover { border-color: var(--accent); }
+  .flag-ico { width: 18px; height: 13px; border-radius: 2px; vertical-align: middle; margin-right: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); flex-shrink: 0; }
   .hdr-btn-lang {
     background: var(--bg2); border: 1px solid var(--border); color: var(--text);
     padding: 0 10px; height: 36px; border-radius: 20px;
@@ -149,6 +150,15 @@
   .file-icon { font-size: 24px; margin-bottom: 6px; }
   .file-text { font-size: 13px; font-weight: 600; color: var(--muted); }
   .file-sub { font-size: 11px; color: var(--faint); margin-top: 3px; }
+
+  .file-zone.compact {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; padding: 0; border: 1.5px solid var(--border); border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .file-zone.compact.hover { border-color: var(--accent); background: rgba(var(--accent-rgb),0.07); }
+  .file-zone.compact .file-icon { font-size: 15px; margin-bottom: 0; }
+  .file-zone.compact .file-text, .file-zone.compact .file-sub { display: none; }
 
   .file-attached {
     background: var(--bg3); border: 1.5px solid var(--green); border-radius: 14px;
@@ -563,6 +573,16 @@
   .search-rec-info { flex: 1; min-width: 0; }
   .search-rec-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .search-rec-desc { font-size: 11px; color: var(--muted); margin-top: 1px; line-height: 1.35; }
+
+/* ══════════════════════════════════════════════════════
+   AJUSTES DE PRESENTACIÓN PARA ESCRITORIO — SOLO VISUAL
+   No modifica funcionalidad, lógica ni comportamiento.
+   No afecta la vista móvil (min-width: 901px).
+   ══════════════════════════════════════════════════════ */
+@media (min-width: 901px) {
+  #header, #tabs, .view { max-width: 952px; margin-left: auto; margin-right: auto; width: 100%; }
+  body { zoom: 1.2; }
+}
 </style>
 </head>
 <body>
@@ -587,12 +607,6 @@
 <!-- ══════════════════ MAIN VIEW ══════════════════ -->
 <div id="view-main" class="view active">
 
-  <div id="file-zone" class="file-zone">
-    <input type="file" id="file-input" accept=".pdf,image/*" />
-    <div class="file-icon">📎</div>
-    <div class="file-text">Adjuntar ficha técnica, cotización o documento</div>
-    <div class="file-sub">PDF · JPG · PNG · WEBP</div>
-  </div>
   <div id="file-attached" style="display:none" class="file-attached">
     <span id="file-attached-icon" style="font-size:24px">📄</span>
     <div class="file-attached-info">
@@ -608,6 +622,12 @@
     <div class="input-footer">
       <span class="char-count" id="char-count">0 caracteres</span>
       <div style="display:flex;gap:6px;align-items:center">
+        <div id="file-zone" class="file-zone compact" title="Adjuntar ficha técnica, cotización o documento">
+          <input type="file" id="file-input" accept=".pdf,image/*" />
+          <div class="file-icon">📎</div>
+          <div class="file-text">Adjuntar ficha técnica, cotización o documento</div>
+          <div class="file-sub">PDF · JPG · PNG · WEBP</div>
+        </div>
         <button class="btn-quick-reply" id="btn-quick-reply">💬 Responder</button>
         <button class="btn-danger" id="btn-clear">🗑 Limpiar</button>
       </div>
@@ -720,15 +740,20 @@
       <div class="settings-label" data-i18n="outputLang">Idioma de respuesta</div>
       <div class="settings-tag-row" id="lang-btns">
         <button class="stag active" data-lang="auto">✨ Auto</button>
-        <button class="stag" data-lang="es">🇪🇸 Español</button>
-        <button class="stag" data-lang="en">🇺🇸 English</button>
-        <button class="stag" data-lang="de">🇩🇪 Deutsch</button>
-        <button class="stag" data-lang="fr">🇫🇷 Français</button>
-        <button class="stag" data-lang="it">🇮🇹 Italiano</button>
-        <button class="stag" data-lang="pt">🇧🇷 Português</button>
-        <button class="stag" data-lang="zh">🇨🇳 中文</button>
-        <button class="stag" data-lang="ja">🇯🇵 日本語</button>
-        <button class="stag" data-lang="ko">🇰🇷 한국어</button>
+        <button class="stag" data-lang="es"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg> Español</button>
+        <button class="stag" data-lang="en"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="8" height="7.54" fill="#3C3B6E"/></svg> English</button>
+        <button class="stag" data-lang="de"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#000"/><rect y="4.67" width="20" height="4.67" fill="#DD0000"/><rect y="9.33" width="20" height="4.67" fill="#FFCE00"/></svg> Deutsch</button>
+        <button class="stag" data-lang="fr"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#0055A4"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg> Français</button>
+        <button class="stag" data-lang="it"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#009246"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#CE2B37"/></svg> Italiano</button>
+        <button class="stag" data-lang="pt"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#009739"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDD00"/><circle cx="10" cy="7" r="3" fill="#012169"/></svg> Português</button>
+        <button class="stag" data-lang="uk"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="7" fill="#005BBB"/><rect y="7" width="20" height="7" fill="#FFD500"/></svg> Українська</button>
+        <button class="stag" data-lang="ru"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#fff"/><rect y="4.67" width="20" height="4.67" fill="#0039A6"/><rect y="9.33" width="20" height="4.67" fill="#D52B1E"/></svg> Русский</button>
+        <button class="stag" data-lang="he"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><rect y="1.5" width="20" height="1.8" fill="#0038B8"/><rect y="10.7" width="20" height="1.8" fill="#0038B8"/><g fill="none" stroke="#0038B8" stroke-width="0.6"><polygon points="10,4.5 12.3,8.5 7.7,8.5"/><polygon points="10,9.5 7.7,5.5 12.3,5.5"/></g></svg> עברית</button>
+        <button class="stag" data-lang="zh"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#DE2910"/><polygon points="4,2 4.6,3.8 6.5,3.8 4.95,4.9 5.55,6.7 4,5.6 2.45,6.7 3.05,4.9 1.5,3.8 3.4,3.8" fill="#FFDE00"/></svg> 中文</button>
+        <button class="stag" data-lang="ja"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><circle cx="10" cy="7" r="4" fill="#BC002D"/></svg> 日本語</button>
+        <button class="stag" data-lang="ko"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><path d="M10 3.5 A3.5 3.5 0 0 1 10 10.5 A1.75 1.75 0 0 1 10 7 A1.75 1.75 0 0 0 10 3.5 Z" fill="#CD2E3A"/><path d="M10 10.5 A3.5 3.5 0 0 1 10 3.5 A1.75 1.75 0 0 1 10 7 A1.75 1.75 0 0 0 10 10.5 Z" fill="#0047A0"/></svg> 한국어</button>
+        <button class="stag" data-lang="hi"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#FF9933"/><rect y="4.67" width="20" height="4.67" fill="#fff"/><rect y="9.33" width="20" height="4.67" fill="#138808"/><circle cx="10" cy="7" r="1.6" fill="none" stroke="#000080" stroke-width="0.3"/></svg> हिन्दी</button>
+        <button class="stag" data-lang="sw"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><rect y="0.9" width="20" height="3.2" fill="#000"/><rect y="5.4" width="20" height="3.2" fill="#BB0000"/><rect y="9.9" width="20" height="3.2" fill="#006600"/></svg> Kiswahili</button>
         <button class="stag stag-other" id="btn-lang-resp-other" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;margin-top:2px">
           <span style="font-size:20px">🌐</span>
           <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px">
@@ -804,15 +829,20 @@
     <div class="modal-sub">Selecciona el idioma de la interfaz</div>
     <div style="display:flex;flex-direction:column;gap:6px" id="ui-lang-list">
       <button class="modal-btn-secondary" data-ui-lang="auto" style="text-align:left;padding:12px 16px">✨ Auto (detectar)</button>
-      <button class="modal-btn-secondary" data-ui-lang="es" style="text-align:left;padding:12px 16px">🇪🇸 Español</button>
-      <button class="modal-btn-secondary" data-ui-lang="en" style="text-align:left;padding:12px 16px">🇺🇸 English</button>
-      <button class="modal-btn-secondary" data-ui-lang="de" style="text-align:left;padding:12px 16px">🇩🇪 Deutsch</button>
-      <button class="modal-btn-secondary" data-ui-lang="fr" style="text-align:left;padding:12px 16px">🇫🇷 Français</button>
-      <button class="modal-btn-secondary" data-ui-lang="it" style="text-align:left;padding:12px 16px">🇮🇹 Italiano</button>
-      <button class="modal-btn-secondary" data-ui-lang="pt" style="text-align:left;padding:12px 16px">🇧🇷 Português</button>
-      <button class="modal-btn-secondary" data-ui-lang="zh" style="text-align:left;padding:12px 16px">🇨🇳 中文</button>
-      <button class="modal-btn-secondary" data-ui-lang="ja" style="text-align:left;padding:12px 16px">🇯🇵 日本語</button>
-      <button class="modal-btn-secondary" data-ui-lang="ko" style="text-align:left;padding:12px 16px">🇰🇷 한국어</button>
+      <button class="modal-btn-secondary" data-ui-lang="es" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg> Español</button>
+      <button class="modal-btn-secondary" data-ui-lang="en" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="8" height="7.54" fill="#3C3B6E"/></svg> English</button>
+      <button class="modal-btn-secondary" data-ui-lang="de" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#000"/><rect y="4.67" width="20" height="4.67" fill="#DD0000"/><rect y="9.33" width="20" height="4.67" fill="#FFCE00"/></svg> Deutsch</button>
+      <button class="modal-btn-secondary" data-ui-lang="fr" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#0055A4"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg> Français</button>
+      <button class="modal-btn-secondary" data-ui-lang="it" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#009246"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#CE2B37"/></svg> Italiano</button>
+      <button class="modal-btn-secondary" data-ui-lang="pt" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#009739"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDD00"/><circle cx="10" cy="7" r="3" fill="#012169"/></svg> Português</button>
+      <button class="modal-btn-secondary" data-ui-lang="uk" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="7" fill="#005BBB"/><rect y="7" width="20" height="7" fill="#FFD500"/></svg> Українська</button>
+      <button class="modal-btn-secondary" data-ui-lang="ru" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#fff"/><rect y="4.67" width="20" height="4.67" fill="#0039A6"/><rect y="9.33" width="20" height="4.67" fill="#D52B1E"/></svg> Русский</button>
+      <button class="modal-btn-secondary" data-ui-lang="he" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><rect y="1.5" width="20" height="1.8" fill="#0038B8"/><rect y="10.7" width="20" height="1.8" fill="#0038B8"/><g fill="none" stroke="#0038B8" stroke-width="0.6"><polygon points="10,4.5 12.3,8.5 7.7,8.5"/><polygon points="10,9.5 7.7,5.5 12.3,5.5"/></g></svg> עברית</button>
+      <button class="modal-btn-secondary" data-ui-lang="zh" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#DE2910"/><polygon points="4,2 4.6,3.8 6.5,3.8 4.95,4.9 5.55,6.7 4,5.6 2.45,6.7 3.05,4.9 1.5,3.8 3.4,3.8" fill="#FFDE00"/></svg> 中文</button>
+      <button class="modal-btn-secondary" data-ui-lang="ja" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><circle cx="10" cy="7" r="4" fill="#BC002D"/></svg> 日本語</button>
+      <button class="modal-btn-secondary" data-ui-lang="ko" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><path d="M10 3.5 A3.5 3.5 0 0 1 10 10.5 A1.75 1.75 0 0 1 10 7 A1.75 1.75 0 0 0 10 3.5 Z" fill="#CD2E3A"/><path d="M10 10.5 A3.5 3.5 0 0 1 10 3.5 A1.75 1.75 0 0 1 10 7 A1.75 1.75 0 0 0 10 10.5 Z" fill="#0047A0"/></svg> 한국어</button>
+      <button class="modal-btn-secondary" data-ui-lang="hi" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#FF9933"/><rect y="4.67" width="20" height="4.67" fill="#fff"/><rect y="9.33" width="20" height="4.67" fill="#138808"/><circle cx="10" cy="7" r="1.6" fill="none" stroke="#000080" stroke-width="0.3"/></svg> हिन्दी</button>
+      <button class="modal-btn-secondary" data-ui-lang="sw" style="text-align:left;padding:12px 16px"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><rect y="0.9" width="20" height="3.2" fill="#000"/><rect y="5.4" width="20" height="3.2" fill="#BB0000"/><rect y="9.9" width="20" height="3.2" fill="#006600"/></svg> Kiswahili</button>
       <button class="modal-btn-secondary" id="btn-ui-lang-other" style="text-align:left;padding:12px 16px;display:flex;align-items:center;gap:10px">
         <span style="font-size:20px">🌐</span>
         <span style="display:flex;flex-direction:column;gap:1px">
@@ -964,7 +994,7 @@ const DOC_PROMPTS = {
   master:     `Eres experto en ventas y marketing. Genera un PAQUETE COMPLETO DE VENTAS:\n\n🚀 PITCH DE VENTA\n\n💎 VENTAJAS Y BENEFICIOS\n\n🛡️ MANEJO DE OBJECIONES (top 3)\n\n💬 MENSAJE WHATSAPP\n\n📱 POST PARA REDES\n\nDetecta el tipo de producto automáticamente. Información:`,
 };
 
-const UI_LANG_LABELS = { auto:"Auto", es:"ES", en:"EN", de:"DE", fr:"FR", it:"IT", pt:"PT", zh:"ZH", ja:"JA", ko:"KO" };
+const UI_LANG_LABELS = { auto:"Auto", es:"ES", en:"EN", de:"DE", fr:"FR", it:"IT", pt:"PT", uk:"UK", ru:"RU", he:"HE", zh:"ZH", ja:"JA", ko:"KO", hi:"HI", sw:"SW" };
 
 // ─── UI TRANSLATIONS ──────────────────────────────────────────────────────────
 const UI_STRINGS = {
@@ -1824,6 +1854,486 @@ const UI_STRINGS = {
       master_ai:"영업 단계를 자동으로 감지", idea_to_text:"의도를 설명하면 AI가 작성", humanize:"AI 톤 제거, 자연스럽게", improve:"문법과 스타일 개선", shorter:"더 간결하게, 같은 메시지", expand:"세부 사항과 풍부함 추가", rephrase:"같은 내용을 다르게 표현", rewrite:"새로운 버전, 같은 본질", active_voice:"수동태 → 능동태 변환", formal:"전문적이고 진지한 톤", email:"완전한 이메일 형식", summary:"핵심 포인트 목록", action:"작업 및 다음 단계 추출", pitch:"거부할 수 없는 제안", cta:"클릭과 판매를 유도하는 CTA", benefits:"스펙을 판매 가치로 변환", objections:"의문과 저항에 답변", ad_copy:"Facebook / Instagram 광고", followup:"효과적인 팔로업 메시지", testimonial:"피드백을 사회적 증거로 변환", value_prop:"무엇이 당신을 독특하게 만드나요?", social_post:"LinkedIn, Instagram 등", tweet:"280자 미만", threads:"500자에 최적화", hook:"독자를 사로잡는 첫 줄", caption:"이미지 캡션", add_emojis:"전략적 이모지 추가", to_english:"자연스러운 번역", to_spanish:"자연스러운 번역", to_french:"자연스러운 번역", to_portuguese:"자연스러운 번역", to_italian:"자연스러운 번역", to_other:"대상 언어 지정", reply:"답장 작성", apologize:"진심 어린 사과 작성", detailed:"더 정확하고 자세하게"
     },
   },
+  uk: {
+    categories: ["✨ Усі","🚀 МАЙСТЕР","💡 Створити","✍️ Письмо","💼 Робота","🎯 Продажі","📱 Соцмережі","🌐 Перекласти","💬 Повідомлення","🎨 Тони"],
+    inputLabel: "Ваш текст",
+    inputLabelOpt: "Ваш текст (необов'язково)",
+    placeholder: "Напишіть, вставте або продиктуйте текст тут…",
+    charUnit: "символів",
+    quickReply: "💬 Відповісти",
+    btnCopy: "📋 Копіювати",
+    btnReplace: "⬆️ Використати як введення",
+    btnHumanize: "🫀 Олюднити",
+    btnToneResult: "🎨 Змінити тон",
+    settingsTitle: "НАЛАШТУВАННЯ",
+    btnBack: "← Назад",
+    outputLang: "Мова відповіді",
+    theme: "Тема",
+    themeDark: "🌙 Темна",
+    themeLight: "☀️ Світла",
+    defaultTone: "Тон за замовчуванням",
+    toneNeutral: "Нейтральний",
+    toneFormal: "Формальний",
+    toneCasual: "Невимушений",
+    noHistory: "Історії ще немає.",
+    fileReady: "Готово ✓",
+    fileRemoveTitle: "Видалити файл",
+    btnRedo: "🔁 Повторити",
+    btnClear: "🗑 Очистити",
+    sectionTitle: "НАЛАШТУВАННЯ",
+    sectionQuickActions: "Швидкі дії",
+    toneStripLabel: "🎨 Швидкий доступ до тонів",
+    fileZoneText: "Прикріпіть техпаспорт, кошторис або документ",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Ваш профіль",
+    profileUnconfigured: "Не налаштовано",
+    profileNameLabel: "ВАШЕ ІМ'Я",
+    profileNameOptional: "(необов'язково)",
+    profileGenderLabel: "СТАТЬ",
+    profileMale: "🧑 Чоловіча",
+    profileFemale: "👩 Жіноча",
+    profileGenderMale: "Чоловіча",
+    profileGenderFemale: "Жіноча",
+    profileGenderNone: "Стать не вказана",
+    btnSaveProfile: "💾 Зберегти профіль",
+    apikeyLabel: "🔑 API-ключ Anthropic",
+    btnSaveKey: "💾 Зберегти ключ",
+    btnDelKey: "🗑 Видалити ключ",
+    apikeyNoKey: "Немає ключа — режим Claude.ai (використовує токени акаунта)",
+    apikeyHasSaved: "Ключ збережено",
+    apikeyInfoTitle: "Коли потрібен API-ключ?",
+    apikeyInfo: "• <strong>Усередині Claude.ai</strong> (цей чат): <em>нічого не потрібно</em>, застосунок використовує ваш акаунт і токени автоматично.<br>• <strong>Поза Claude.ai</strong> (локальний файл, ваш сервер, GitHub Pages): введіть ключ з <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>Ключ зберігається лише на вашому пристрої і ніколи не надсилається на сторонні сервери.",
+    privacyText: "<strong>Конфіденційність:</strong> Ваш текст і зображення надсилаються до Claude (Anthropic) для обробки. Історія зберігається лише на вашому пристрої.",
+    btnClearHistory: "🗑 Очистити історію",
+    confirmClearHistory: "Видалити всю історію?",
+    toastCleared: "🗑 Історію очищено",
+    toastCopied: "✅ Скопійовано!",
+    toastLoaded: "⬆️ Завантажено як введення",
+    toastNoText: "✏️ Спершу напишіть або вставте текст",
+    toastNoTextShort: "✏️ Спершу напишіть текст",
+    toastNoFile: "Спершу прикріпіть файл",
+    toastApiKeyRequired: "✏️ Введіть свій API-ключ",
+    toastApiKeyInvalid: "❌ Недійсний ключ (має починатися з sk-ant-)",
+    toastApiKeySaved: "✅ API-ключ збережено",
+    toastApiKeyDeleted: "🗑 API-ключ видалено",
+    toastProfileSaved: "✅ Профіль збережено",
+    toastFilePdf: "✅ PDF готовий",
+    toastFileImg: "✅ Зображення готове",
+    toastFileError: "❌ Використовуйте PDF або зображення",
+    toastFileReadError: "❌ Помилка читання файлу",
+    toastHoldToCopy: "✋ Утримуйте результат, щоб скопіювати",
+    modalTranslateTitle: "🌐 Обрати мову перекладу",
+    modalTranslateSub: "Якою мовою перекласти?",
+    modalTranslatePlaceholder: "Напр.: німецька, японська, арабська, корейська...",
+    modalTranslateCancel: "Скасувати",
+    modalTranslateConfirm: "Перекласти",
+    modalUiLangTitle: "🌐 Мова інтерфейсу",
+    modalUiLangSub: "Оберіть мову інтерфейсу",
+    modalUiLangCancel: "Скасувати",
+    modalUiLangOther: "Інша мова",
+    modalUiLangOtherSub: "Вкажіть цільову мову",
+    modalRespLangTitle: "🌐 Мова відповіді",
+    modalRespLangSub: "Якою мовою має відповідати ШІ?",
+    modalRespLangPlaceholder: "Напр.: японська, арабська, китайська, корейська...",
+    modalRespLangCancel: "Скасувати",
+    modalRespLangConfirm: "Застосувати",
+    modalToneTitle: "🎨 Змінити тон",
+    modalToneSub: "Оберіть тон, щоб переписати текст, зберігаючи первинний зміст.",
+    modalToneApply: "Застосувати тон",
+    modalToneCancel: "Скасувати",
+    toneNames: ["Гуманізувати","Ввічливий","Романтичний","Розмовний","Емпатійний","Мотивуючий","Оповідний","Мінімалістичний","Терміновий","Ностальгічний","Гумористичний","Поетичний","Саркастичний","Енергійний","Грайливий","Дотепний","Захоплений","Впевнений","Дипломатичний","Формальний","Невимушений","Кооперативний","Плавний","Розуміючий","Впевнений у собі","Привабливий","Зарифмувати","Перетворити на вірш"],
+    toneDescs: ["Прибирає тон ШІ, робить текст автентичним","Формально, шанобливо й ввічливо","Теплий, емоційний і ніжний","Природний тон діалогу між людьми","З розумінням і емоційною підтримкою","Надихає, заряджає енергією","Розповідь із зав'язкою, кульмінацією та емоцією","Менше слів, більше впливу","Спонукає до негайної дії","Викликає спогади й минулі емоції","Легкий, з гумором і дотепністю","Метафори, ритм і естетика","Іронія, подвійний сенс і гострота","Твердий, прямий, з незгодою","Грайливий, тонкий і впевнений","Гострий, розумний і витончений","Схвильований і сповнений енергії","Прямий, впевнений, без манівців","Виважений і обережний","Професійний і серйозний","Дружній і невимушений","Спільний, командний","Плавне й природне читання","Теплий, з людською теплотою","Впевнений і авторитетний","Цікавий і захопливий","Перетворює текст на римовані рядки","Перетворює текст на вірш"],
+    promptNames: {
+      master_ai:"МАЙСТЕР — ШІ визначає етап", idea_to_text:"Створити з ідеї", humanize:"Гуманізувати", improve:"Покращити", shorter:"Скоротити", expand:"Розширити", rephrase:"Перефразувати", rewrite:"Переписати", active_voice:"Активний стан", formal:"Формалізувати", email:"Професійний email", summary:"Резюме", action:"Пункти дій", pitch:"Продажний пітч", cta:"Заклик до дії", benefits:"Переваги та вигоди", objections:"Робота із запереченнями", ad_copy:"Текст для реклами", followup:"Повторний контакт", testimonial:"Відгук", value_prop:"Ціннісна пропозиція", social_post:"Пост у соцмережі", tweet:"Твіт / X", threads:"Threads", hook:"Вірусний хук", caption:"Підпис до фото", add_emojis:"+ Емодзі", to_english:"Англійською", to_spanish:"Іспанською", to_french:"Французькою", to_portuguese:"Португальською", to_italian:"Італійською", to_other:"Інша мова", reply:"Відповісти", apologize:"Вибачитися", detailed:"Детально"
+    },
+    promptDescs: {
+      master_ai:"Автоматично визначає етап продажу", idea_to_text:"Опишіть намір — ШІ напише текст", humanize:"Прибирає тон ШІ, робить текст природним", improve:"Покращує граматику й стиль", shorter:"Лаконічніше, той самий зміст", expand:"Додає деталі й насиченість", rephrase:"Скажіть те саме інакше", rewrite:"Нова версія, та сама суть", active_voice:"Перетворює пасив на актив", formal:"Професійний і серйозний тон", email:"Повний формат листа", summary:"Ключові пункти списком", action:"Видобуває завдання та наступні кроки", pitch:"Незаперечна й пряма пропозиція", cta:"CTA, що приваблює кліки й продажі", benefits:"Перетворює характеристики на цінність", objections:"Відповідає на сумніви й заперечення", ad_copy:"Реклама Facebook / Instagram", followup:"Ефективне повторне повідомлення", testimonial:"Перетворює відгук на соціальний доказ", value_prop:"Що робить вас унікальним?", social_post:"LinkedIn, Instagram тощо", tweet:"Менше 280 символів", threads:"Оптимізовано для 500 символів", hook:"Перший рядок, що зачіплює", caption:"Підпис до зображення", add_emojis:"Додає стратегічні емодзі", to_english:"Природний переклад", to_spanish:"Природний переклад", to_french:"Природний переклад", to_portuguese:"Природний переклад", to_italian:"Природний переклад", to_other:"Вкажіть цільову мову", reply:"Скласти відповідь", apologize:"Скласти щирі вибачення", detailed:"Точніше, з більшим контекстом"
+    },
+  },
+  ru: {
+    categories: ["✨ Все","🚀 МАСТЕР","💡 Создать","✍️ Письмо","💼 Работа","🎯 Продажи","📱 Соцсети","🌐 Перевести","💬 Сообщения","🎨 Тона"],
+    inputLabel: "Ваш текст",
+    inputLabelOpt: "Ваш текст (необязательно)",
+    placeholder: "Напишите, вставьте или продиктуйте текст здесь…",
+    charUnit: "символов",
+    quickReply: "💬 Ответить",
+    btnCopy: "📋 Копировать",
+    btnReplace: "⬆️ Использовать как ввод",
+    btnHumanize: "🫀 Очеловечить",
+    btnToneResult: "🎨 Изменить тон",
+    settingsTitle: "НАСТРОЙКИ",
+    btnBack: "← Назад",
+    outputLang: "Язык ответа",
+    theme: "Тема",
+    themeDark: "🌙 Тёмная",
+    themeLight: "☀️ Светлая",
+    defaultTone: "Тон по умолчанию",
+    toneNeutral: "Нейтральный",
+    toneFormal: "Формальный",
+    toneCasual: "Непринуждённый",
+    noHistory: "История пока пуста.",
+    fileReady: "Готово ✓",
+    fileRemoveTitle: "Удалить файл",
+    btnRedo: "🔁 Повторить",
+    btnClear: "🗑 Очистить",
+    sectionTitle: "НАСТРОЙКИ",
+    sectionQuickActions: "Быстрые действия",
+    toneStripLabel: "🎨 Быстрый доступ к тонам",
+    fileZoneText: "Прикрепите техпаспорт, смету или документ",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Ваш профиль",
+    profileUnconfigured: "Не настроено",
+    profileNameLabel: "ВАШЕ ИМЯ",
+    profileNameOptional: "(необязательно)",
+    profileGenderLabel: "ПОЛ",
+    profileMale: "🧑 Мужской",
+    profileFemale: "👩 Женский",
+    profileGenderMale: "Мужской",
+    profileGenderFemale: "Женский",
+    profileGenderNone: "Пол не задан",
+    btnSaveProfile: "💾 Сохранить профиль",
+    apikeyLabel: "🔑 API-ключ Anthropic",
+    btnSaveKey: "💾 Сохранить ключ",
+    btnDelKey: "🗑 Удалить ключ",
+    apikeyNoKey: "Нет ключа — режим Claude.ai (использует токены аккаунта)",
+    apikeyHasSaved: "Ключ сохранён",
+    apikeyInfoTitle: "Когда нужен API-ключ?",
+    apikeyInfo: "• <strong>Внутри Claude.ai</strong> (этот чат): <em>ничего не нужно</em>, приложение использует ваш аккаунт и токены автоматически.<br>• <strong>Вне Claude.ai</strong> (локальный файл, ваш сервер, GitHub Pages): введите ключ с <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>Ключ сохраняется только на вашем устройстве и никогда не отправляется на сторонние серверы.",
+    privacyText: "<strong>Конфиденциальность:</strong> Ваш текст и изображения отправляются в Claude (Anthropic) для обработки. История сохраняется только на вашем устройстве.",
+    btnClearHistory: "🗑 Очистить историю",
+    confirmClearHistory: "Удалить всю историю?",
+    toastCleared: "🗑 История очищена",
+    toastCopied: "✅ Скопировано!",
+    toastLoaded: "⬆️ Загружено как ввод",
+    toastNoText: "✏️ Сначала напишите или вставьте текст",
+    toastNoTextShort: "✏️ Сначала напишите текст",
+    toastNoFile: "Сначала прикрепите файл",
+    toastApiKeyRequired: "✏️ Введите ваш API-ключ",
+    toastApiKeyInvalid: "❌ Неверный ключ (должен начинаться с sk-ant-)",
+    toastApiKeySaved: "✅ API-ключ сохранён",
+    toastApiKeyDeleted: "🗑 API-ключ удалён",
+    toastProfileSaved: "✅ Профиль сохранён",
+    toastFilePdf: "✅ PDF готов",
+    toastFileImg: "✅ Изображение готово",
+    toastFileError: "❌ Используйте PDF или изображение",
+    toastFileReadError: "❌ Ошибка чтения файла",
+    toastHoldToCopy: "✋ Удерживайте результат, чтобы скопировать",
+    modalTranslateTitle: "🌐 Выбрать язык перевода",
+    modalTranslateSub: "На какой язык перевести?",
+    modalTranslatePlaceholder: "Напр.: немецкий, японский, арабский, корейский...",
+    modalTranslateCancel: "Отмена",
+    modalTranslateConfirm: "Перевести",
+    modalUiLangTitle: "🌐 Язык интерфейса",
+    modalUiLangSub: "Выберите язык интерфейса",
+    modalUiLangCancel: "Отмена",
+    modalUiLangOther: "Другой язык",
+    modalUiLangOtherSub: "Укажите целевой язык",
+    modalRespLangTitle: "🌐 Язык ответа",
+    modalRespLangSub: "На каком языке ИИ должен отвечать?",
+    modalRespLangPlaceholder: "Напр.: японский, арабский, китайский, корейский...",
+    modalRespLangCancel: "Отмена",
+    modalRespLangConfirm: "Применить",
+    modalToneTitle: "🎨 Изменить тон",
+    modalToneSub: "Выберите тон для переписывания текста с сохранением исходного смысла.",
+    modalToneApply: "Применить тон",
+    modalToneCancel: "Отмена",
+    toneNames: ["Очеловечить","Вежливый","Романтичный","Разговорный","Эмпатичный","Мотивирующий","Повествовательный","Минималистичный","Срочный","Ностальгический","Юмористический","Поэтичный","Саркастичный","Энергичный","Игривый","Остроумный","Восторженный","Уверенный","Дипломатичный","Официальный","Непринуждённый","Кооперативный","Плавный","Понимающий","Уверенный в себе","Привлекательный","Зарифмовать","Превратить в стих"],
+    toneDescs: ["Убирает тон ИИ, делает текст настоящим","Официально, уважительно и вежливо","Тёплый, эмоциональный и нежный","Естественный тон диалога между людьми","С пониманием и эмоциональной поддержкой","Вдохновляет, заряжает энергией","Повествование с завязкой, кульминацией и эмоцией","Меньше слов, больше эффекта","Побуждает к немедленному действию","Пробуждает воспоминания и прошлые эмоции","Лёгкий, с юмором и остроумием","Метафоры, ритм и эстетика","Ирония, двойной смысл и колкость","Твёрдый, прямой, с несогласием","Игривый, тонкий и уверенный","Острый, умный и с изяществом","Взволнованный и полный энергии","Прямой, уверенный, без обиняков","Взвешенный и осторожный","Профессиональный и серьёзный","Дружелюбный и непринуждённый","Совместный, командный","Плавное и естественное чтение","Тёплый, с человеческой теплотой","Уверенный и авторитетный","Интересный и захватывающий","Превращает текст в рифмованные строки","Превращает текст в стихотворение"],
+    promptNames: {
+      master_ai:"МАСТЕР — ИИ определяет этап", idea_to_text:"Создать из идеи", humanize:"Очеловечить", improve:"Улучшить", shorter:"Сократить", expand:"Расширить", rephrase:"Перефразировать", rewrite:"Переписать", active_voice:"Активный залог", formal:"Формализовать", email:"Профессиональный email", summary:"Резюме", action:"Пункты действий", pitch:"Питч продаж", cta:"Призыв к действию", benefits:"Преимущества и выгоды", objections:"Работа с возражениями", ad_copy:"Текст для рекламы", followup:"Повторный контакт", testimonial:"Отзыв", value_prop:"Ценностное предложение", social_post:"Пост в соцсети", tweet:"Твит / X", threads:"Threads", hook:"Вирусный хук", caption:"Подпись к фото", add_emojis:"+ Эмодзи", to_english:"На английский", to_spanish:"На испанский", to_french:"На французский", to_portuguese:"На португальский", to_italian:"На итальянский", to_other:"Другой язык", reply:"Ответить", apologize:"Извиниться", detailed:"Подробно"
+    },
+    promptDescs: {
+      master_ai:"Автоматически определяет этап продажи", idea_to_text:"Опишите намерение — ИИ напишет текст", humanize:"Убирает тон ИИ, делает текст естественным", improve:"Улучшает грамматику и стиль", shorter:"Более лаконично, тот же смысл", expand:"Добавляет детали и насыщенность", rephrase:"Скажите то же самое иначе", rewrite:"Новая версия, та же суть", active_voice:"Превращает пассив в актив", formal:"Профессиональный и серьёзный тон", email:"Полный формат письма", summary:"Ключевые пункты списком", action:"Извлекает задачи и следующие шаги", pitch:"Неотразимое и прямое предложение", cta:"CTA, привлекающий клики и продажи", benefits:"Превращает характеристики в ценность", objections:"Отвечает на сомнения и возражения", ad_copy:"Реклама Facebook / Instagram", followup:"Эффективное повторное сообщение", testimonial:"Превращает отзыв в социальное доказательство", value_prop:"Что делает вас уникальным?", social_post:"LinkedIn, Instagram и др.", tweet:"Менее 280 символов", threads:"Оптимизировано для 500 символов", hook:"Первая строка, которая цепляет", caption:"Подпись к изображению", add_emojis:"Добавляет стратегические эмодзи", to_english:"Естественный перевод", to_spanish:"Естественный перевод", to_french:"Естественный перевод", to_portuguese:"Естественный перевод", to_italian:"Естественный перевод", to_other:"Укажите целевой язык", reply:"Составить ответ", apologize:"Составить искренние извинения", detailed:"Точнее, с большим контекстом"
+    },
+  },
+  he: {
+    categories: ["✨ הכול","🚀 מאסטר","💡 ליצור","✍️ כתיבה","💼 עבודה","🎯 מכירות","📱 רשתות חברתיות","🌐 לתרגם","💬 הודעות","🎨 טונים"],
+    inputLabel: "הטקסט שלך",
+    inputLabelOpt: "הטקסט שלך (אופציונלי)",
+    placeholder: "כתוב, הדבק או הכתב את הטקסט כאן…",
+    charUnit: "תווים",
+    quickReply: "💬 להשיב",
+    btnCopy: "📋 העתק",
+    btnReplace: "⬆️ השתמש כקלט",
+    btnHumanize: "🫀 להאניש",
+    btnToneResult: "🎨 שנה טון",
+    settingsTitle: "הגדרות",
+    btnBack: "← חזרה",
+    outputLang: "שפת התשובה",
+    theme: "ערכת נושא",
+    themeDark: "🌙 כהה",
+    themeLight: "☀️ בהיר",
+    defaultTone: "טון ברירת מחדל",
+    toneNeutral: "ניטרלי",
+    toneFormal: "רשמי",
+    toneCasual: "לא רשמי",
+    noHistory: "אין עדיין היסטוריה.",
+    fileReady: "מוכן ✓",
+    fileRemoveTitle: "הסר קובץ",
+    btnRedo: "🔁 חזור על הפעולה",
+    btnClear: "🗑 נקה",
+    sectionTitle: "הגדרות",
+    sectionQuickActions: "פעולות מהירות",
+    toneStripLabel: "🎨 גישה מהירה לטונים",
+    fileZoneText: "צרף גיליון טכני, הצעת מחיר או מסמך",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "הפרופיל שלך",
+    profileUnconfigured: "לא הוגדר",
+    profileNameLabel: "השם שלך",
+    profileNameOptional: "(אופציונלי)",
+    profileGenderLabel: "מגדר",
+    profileMale: "🧑 זכר",
+    profileFemale: "👩 נקבה",
+    profileGenderMale: "זכר",
+    profileGenderFemale: "נקבה",
+    profileGenderNone: "מגדר לא הוגדר",
+    btnSaveProfile: "💾 שמור פרופיל",
+    apikeyLabel: "🔑 מפתח API של Anthropic",
+    btnSaveKey: "💾 שמור מפתח",
+    btnDelKey: "🗑 מחק מפתח",
+    apikeyNoKey: "אין מפתח — מצב Claude.ai (משתמש בטוקנים של החשבון שלך)",
+    apikeyHasSaved: "המפתח נשמר",
+    apikeyInfoTitle: "מתי צריך מפתח API?",
+    apikeyInfo: "• <strong>בתוך Claude.ai</strong> (הצ'אט הזה): <em>אין צורך בכלום</em>, האפליקציה משתמשת בחשבון ובטוקנים שלך אוטומטית.<br>• <strong>מחוץ ל-Claude.ai</strong> (קובץ מקומי, השרת שלך, GitHub Pages): הזן את המפתח שלך מ-<a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>המפתח נשמר רק במכשיר שלך ולעולם לא נשלח לשרת חיצוני.",
+    privacyText: "<strong>פרטיות:</strong> הטקסט והתמונות שלך נשלחים ל-Claude (Anthropic) לעיבוד. ההיסטוריה נשמרת רק במכשיר שלך.",
+    btnClearHistory: "🗑 מחק היסטוריה",
+    confirmClearHistory: "למחוק את כל ההיסטוריה?",
+    toastCleared: "🗑 ההיסטוריה נמחקה",
+    toastCopied: "✅ הועתק!",
+    toastLoaded: "⬆️ נטען כקלט",
+    toastNoText: "✏️ כתוב או הדבק טקסט קודם",
+    toastNoTextShort: "✏️ כתוב טקסט קודם",
+    toastNoFile: "צרף קובץ קודם",
+    toastApiKeyRequired: "✏️ הזן את מפתח ה-API שלך",
+    toastApiKeyInvalid: "❌ מפתח לא תקין (חייב להתחיל ב-sk-ant-)",
+    toastApiKeySaved: "✅ מפתח ה-API נשמר",
+    toastApiKeyDeleted: "🗑 מפתח ה-API נמחק",
+    toastProfileSaved: "✅ הפרופיל נשמר",
+    toastFilePdf: "✅ קובץ ה-PDF מוכן",
+    toastFileImg: "✅ התמונה מוכנה",
+    toastFileError: "❌ השתמש ב-PDF או בתמונה",
+    toastFileReadError: "❌ שגיאה בקריאת הקובץ",
+    toastHoldToCopy: "✋ החזק את התוצאה כדי להעתיק",
+    modalTranslateTitle: "🌐 בחר שפת תרגום",
+    modalTranslateSub: "לאיזו שפה לתרגם?",
+    modalTranslatePlaceholder: "לדוגמה: גרמנית, יפנית, ערבית, קוריאנית...",
+    modalTranslateCancel: "ביטול",
+    modalTranslateConfirm: "תרגם",
+    modalUiLangTitle: "🌐 שפת הממשק",
+    modalUiLangSub: "בחר את שפת הממשק",
+    modalUiLangCancel: "ביטול",
+    modalUiLangOther: "שפה אחרת",
+    modalUiLangOtherSub: "ציין את שפת היעד",
+    modalRespLangTitle: "🌐 שפת התשובה",
+    modalRespLangSub: "באיזו שפה תרצה שהבינה המלאכותית תשיב?",
+    modalRespLangPlaceholder: "לדוגמה: יפנית, ערבית, סינית, קוריאנית...",
+    modalRespLangCancel: "ביטול",
+    modalRespLangConfirm: "החל",
+    modalToneTitle: "🎨 שנה טון",
+    modalToneSub: "בחר טון לשכתוב הטקסט תוך שמירה על המשמעות המקורית.",
+    modalToneApply: "החל טון",
+    modalToneCancel: "ביטול",
+    toneNames: ["להאניש","מנומס","רומנטי","שיחתי","אמפתי","מעורר מוטיבציה","סיפורי","מינימליסטי","דחוף","נוסטלגי","מצחיק","פיוטי","סרקסטי","אנרגטי","פלרטטני","שנון","נלהב","תקיף","דיפלומטי","רשמי","קליל","שיתופי","שוטף","מבין","בטוח בעצמו","מושך","לחרוז","להפוך לשיר"],
+    toneDescs: ["מסיר טון של בינה מלאכותית, הופך לאותנטי","רשמי, מכבד ומנומס","חם, רגשי ואוהב","טון דיאלוג טבעי בין אנשים","מבין, עם תמיכה רגשית","מעורר השראה ואנרגיה","סיפור עם פתיחה, עלילה ורגש","פחות מילים, יותר השפעה","מייצר פעולה מיידית","מעורר זיכרונות ורגשות מהעבר","קליל, עם הומור ושנינות","מטאפורות, קצב ואסתטיקה","אירוניה, משמעות כפולה וחדות","תקיף, ישיר, עם אי-הסכמה","שובב, עדין ובטוח","חד, חכם ואלגנטי","נרגש ומלא אנרגיה","ישיר, בטוח וללא כחל וסרק","מאוזן וזהיר","מקצועי ורציני","ידידותי ורגוע","שיתופי וצוותי","קריאה חלקה וטבעית","חם עם חמימות אנושית","בטוח וסמכותי","מעניין ומושך","הופך את הטקסט לשורות מחורזות","הופך את הטקסט לשיר"],
+    promptNames: {
+      master_ai:"מאסטר — הבינה המלאכותית מזהה שלב", idea_to_text:"ליצור מרעיון", humanize:"להאניש", improve:"לשפר", shorter:"לקצר", expand:"להרחיב", rephrase:"לנסח מחדש", rewrite:"לכתוב מחדש", active_voice:"קול פעיל", formal:"רשמי", email:"אימייל מקצועי", summary:"סיכום", action:"נקודות פעולה", pitch:"פיץ' מכירה", cta:"קריאה לפעולה", benefits:"יתרונות והטבות", objections:"טיפול בהתנגדויות", ad_copy:"טקסט לפרסומת", followup:"מעקב", testimonial:"המלצה", value_prop:"הצעת ערך", social_post:"פוסט חברתי", tweet:"טוויט / X", threads:"Threads", hook:"האק ויראלי", caption:"כיתוב לתמונה", add_emojis:"+ אימוג'ים", to_english:"לאנגלית", to_spanish:"לספרדית", to_french:"לצרפתית", to_portuguese:"לפורטוגזית", to_italian:"לאיטלקית", to_other:"שפה אחרת", reply:"להשיב", apologize:"להתנצל", detailed:"מפורט"
+    },
+    promptDescs: {
+      master_ai:"מזהה אוטומטית באיזה שלב מכירה אתה נמצא", idea_to_text:"תאר את הכוונה שלך והבינה המלאכותית תכתוב את הטקסט", humanize:"מסיר טון של בינה מלאכותית, הופך לטבעי", improve:"משפר דקדוק וסגנון", shorter:"תמציתי יותר, אותה הודעה", expand:"מוסיף פירוט ועושר", rephrase:"אמור את אותו הדבר אחרת", rewrite:"גרסה חדשה, אותה מהות", active_voice:"הופך מפסיבי לפעיל", formal:"טון מקצועי ורציני", email:"פורמט אימייל מלא", summary:"נקודות מפתח ברשימה", action:"מחלץ משימות וצעדים הבאים", pitch:"הצעה בלתי ניתנת לסירוב וישירה", cta:"קריאה לפעולה שמייצרת קליקים ומכירות", benefits:"הופך מפרטים לערך מכירתי", objections:"עונה על ספקות והתנגדויות", ad_copy:"פרסומות פייסבוק / אינסטגרם", followup:"הודעת מעקב יעילה", testimonial:"הופך משוב להוכחה חברתית", value_prop:"מה הופך אותך לייחודי?", social_post:"לינקדאין, אינסטגרם וכו'", tweet:"פחות מ-280 תווים", threads:"מותאם ל-500 תווים", hook:"שורה ראשונה שמושכת", caption:"כיתוב לתמונה", add_emojis:"מוסיף אימוג'ים אסטרטגיים", to_english:"תרגום טבעי", to_spanish:"תרגום טבעי", to_french:"תרגום טבעי", to_portuguese:"תרגום טבעי", to_italian:"תרגום טבעי", to_other:"ציין את שפת היעד", reply:"לנסח תשובה", apologize:"לנסח התנצלות כנה", detailed:"מדויק עם יותר הקשר"
+    },
+  },
+  hi: {
+    categories: ["✨ सभी","🚀 मास्टर","💡 बनाएं","✍️ लेखन","💼 काम","🎯 बिक्री","📱 सोशल","🌐 अनुवाद","💬 संदेश","🎨 टोन"],
+    inputLabel: "आपका टेक्स्ट",
+    inputLabelOpt: "आपका टेक्स्ट (वैकल्पिक)",
+    placeholder: "यहाँ टेक्स्ट लिखें, पेस्ट करें या बोलें…",
+    charUnit: "अक्षर",
+    quickReply: "💬 जवाब दें",
+    btnCopy: "📋 कॉपी करें",
+    btnReplace: "⬆️ इनपुट के रूप में उपयोग करें",
+    btnHumanize: "🫀 मानवीय बनाएं",
+    btnToneResult: "🎨 टोन बदलें",
+    settingsTitle: "सेटिंग्स",
+    btnBack: "← वापस",
+    outputLang: "उत्तर की भाषा",
+    theme: "थीम",
+    themeDark: "🌙 डार्क",
+    themeLight: "☀️ लाइट",
+    defaultTone: "डिफ़ॉल्ट टोन",
+    toneNeutral: "तटस्थ",
+    toneFormal: "औपचारिक",
+    toneCasual: "अनौपचारिक",
+    noHistory: "अभी तक कोई इतिहास नहीं है।",
+    fileReady: "तैयार ✓",
+    fileRemoveTitle: "फ़ाइल हटाएं",
+    btnRedo: "🔁 फिर से करें",
+    btnClear: "🗑 साफ़ करें",
+    sectionTitle: "सेटिंग्स",
+    sectionQuickActions: "त्वरित क्रियाएं",
+    toneStripLabel: "🎨 टोन के लिए त्वरित पहुंच",
+    fileZoneText: "तकनीकी शीट, कोटेशन या दस्तावेज़ संलग्न करें",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "आपकी प्रोफ़ाइल",
+    profileUnconfigured: "कॉन्फ़िगर नहीं किया गया",
+    profileNameLabel: "आपका नाम",
+    profileNameOptional: "(वैकल्पिक)",
+    profileGenderLabel: "लिंग",
+    profileMale: "🧑 पुरुष",
+    profileFemale: "👩 महिला",
+    profileGenderMale: "पुरुष",
+    profileGenderFemale: "महिला",
+    profileGenderNone: "लिंग सेट नहीं है",
+    btnSaveProfile: "💾 प्रोफ़ाइल सहेजें",
+    apikeyLabel: "🔑 Anthropic API कुंजी",
+    btnSaveKey: "💾 कुंजी सहेजें",
+    btnDelKey: "🗑 कुंजी हटाएं",
+    apikeyNoKey: "कोई कुंजी नहीं — Claude.ai मोड (आपके खाते के टोकन उपयोग करता है)",
+    apikeyHasSaved: "कुंजी सहेजी गई",
+    apikeyInfoTitle: "API कुंजी कब चाहिए?",
+    apikeyInfo: "• <strong>Claude.ai के अंदर</strong> (यह चैट): <em>कुछ भी आवश्यक नहीं</em>, ऐप स्वचालित रूप से आपके खाते और टोकन का उपयोग करता है।<br>• <strong>Claude.ai के बाहर</strong> (स्थानीय फ़ाइल, आपका सर्वर, GitHub Pages): <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a> से अपनी कुंजी दर्ज करें।<br><br>कुंजी केवल आपके डिवाइस पर सहेजी जाती है और कभी भी किसी बाहरी सर्वर पर नहीं भेजी जाती।",
+    privacyText: "<strong>गोपनीयता:</strong> आपका टेक्स्ट और छवियां प्रोसेसिंग के लिए Claude (Anthropic) को भेजी जाती हैं। इतिहास केवल आपके डिवाइस पर सहेजा जाता है।",
+    btnClearHistory: "🗑 इतिहास साफ़ करें",
+    confirmClearHistory: "पूरा इतिहास हटाएं?",
+    toastCleared: "🗑 इतिहास साफ़ हो गया",
+    toastCopied: "✅ कॉपी हो गया!",
+    toastLoaded: "⬆️ इनपुट के रूप में लोड हुआ",
+    toastNoText: "✏️ पहले टेक्स्ट लिखें या पेस्ट करें",
+    toastNoTextShort: "✏️ पहले टेक्स्ट लिखें",
+    toastNoFile: "पहले एक फ़ाइल संलग्न करें",
+    toastApiKeyRequired: "✏️ अपनी API कुंजी दर्ज करें",
+    toastApiKeyInvalid: "❌ अमान्य कुंजी (sk-ant- से शुरू होनी चाहिए)",
+    toastApiKeySaved: "✅ API कुंजी सहेजी गई",
+    toastApiKeyDeleted: "🗑 API कुंजी हटाई गई",
+    toastProfileSaved: "✅ प्रोफ़ाइल सहेजी गई",
+    toastFilePdf: "✅ PDF तैयार है",
+    toastFileImg: "✅ छवि तैयार है",
+    toastFileError: "❌ PDF या छवि का उपयोग करें",
+    toastFileReadError: "❌ फ़ाइल पढ़ने में त्रुटि",
+    toastHoldToCopy: "✋ कॉपी करने के लिए परिणाम को दबाए रखें",
+    modalTranslateTitle: "🌐 अनुवाद भाषा चुनें",
+    modalTranslateSub: "किस भाषा में अनुवाद करना है?",
+    modalTranslatePlaceholder: "उदा: जर्मन, जापानी, अरबी, कोरियाई...",
+    modalTranslateCancel: "रद्द करें",
+    modalTranslateConfirm: "अनुवाद करें",
+    modalUiLangTitle: "🌐 इंटरफ़ेस की भाषा",
+    modalUiLangSub: "इंटरफ़ेस की भाषा चुनें",
+    modalUiLangCancel: "रद्द करें",
+    modalUiLangOther: "अन्य भाषा",
+    modalUiLangOtherSub: "लक्ष्य भाषा निर्दिष्ट करें",
+    modalRespLangTitle: "🌐 उत्तर की भाषा",
+    modalRespLangSub: "आप चाहते हैं कि AI किस भाषा में जवाब दे?",
+    modalRespLangPlaceholder: "उदा: जापानी, अरबी, चीनी, कोरियाई...",
+    modalRespLangCancel: "रद्द करें",
+    modalRespLangConfirm: "लागू करें",
+    modalToneTitle: "🎨 टोन बदलें",
+    modalToneSub: "मूल अर्थ बनाए रखते हुए टेक्स्ट को फिर से लिखने के लिए एक टोन चुनें।",
+    modalToneApply: "टोन लागू करें",
+    modalToneCancel: "रद्द करें",
+    toneNames: ["मानवीय बनाएं","विनम्र","रोमांटिक","बातचीत जैसा","सहानुभूतिपूर्ण","प्रेरक","कथात्मक","न्यूनतम","तत्काल","पुरानी यादें","मज़ाकिया","काव्यात्मक","व्यंग्यात्मक","ऊर्जावान","चंचल","चतुर","उत्साही","दृढ़","कूटनीतिक","औपचारिक","अनौपचारिक","सहयोगात्मक","सहज","समझदार","आत्मविश्वासी","आकर्षक","तुकबंदी करें","कविता बनाएं"],
+    toneDescs: ["AI टोन हटाता है, इसे प्रामाणिक बनाता है","औपचारिक, सम्मानजनक और विनम्र","गर्मजोशी भरा, भावुक और स्नेही","लोगों के बीच स्वाभाविक संवाद टोन","समझदार, भावनात्मक समर्थन के साथ","प्रेरित करता है, ऊर्जा देता है","शुरुआत, मोड़ और भावना के साथ कथा","कम शब्द, अधिक प्रभाव","तुरंत कार्रवाई उत्पन्न करता है","पुरानी यादें और भावनाएं जगाता है","हल्का, हास्य और चतुराई के साथ","रूपक, लय और सौंदर्य","विडंबना, दोहरा अर्थ और तीखापन","दृढ़, प्रत्यक्ष, असहमति के साथ","चंचल, सूक्ष्म और आत्मविश्वासी","तीक्ष्ण, बुद्धिमान और सुरुचिपूर्ण","उत्साहित और ऊर्जा से भरपूर","सीधा, आत्मविश्वासी और स्पष्ट","संतुलित और सावधान","पेशेवर और गंभीर","मित्रवत और सहज","सहयोगी और टीम-उन्मुख","सहज और स्वाभाविक पठन","मानवीय गर्मजोशी के साथ","आत्मविश्वासी और आधिकारिक","दिलचस्प और आकर्षक","टेक्स्ट को तुकांत पंक्तियों में बदलता है","टेक्स्ट को एक कविता में बदलता है"],
+    promptNames: {
+      master_ai:"मास्टर — AI चरण पहचानता है", idea_to_text:"विचार से बनाएं", humanize:"मानवीय बनाएं", improve:"सुधारें", shorter:"छोटा करें", expand:"विस्तार करें", rephrase:"पुनः लिखें", rewrite:"फिर से लिखें", active_voice:"सक्रिय आवाज़", formal:"औपचारिक बनाएं", email:"पेशेवर ईमेल", summary:"सारांश", action:"कार्य बिंदु", pitch:"बिक्री पिच", cta:"कार्रवाई का आह्वान", benefits:"लाभ और फायदे", objections:"आपत्तियों को संभालें", ad_copy:"विज्ञापन कॉपी", followup:"फॉलो-अप", testimonial:"प्रशंसापत्र", value_prop:"मूल्य प्रस्ताव", social_post:"सोशल पोस्ट", tweet:"ट्वीट / X", threads:"Threads", hook:"वायरल हुक", caption:"फोटो कैप्शन", add_emojis:"+ इमोजी", to_english:"अंग्रेज़ी में", to_spanish:"स्पेनिश में", to_french:"फ्रेंच में", to_portuguese:"पुर्तगाली में", to_italian:"इतालवी में", to_other:"अन्य भाषा", reply:"जवाब दें", apologize:"माफी मांगें", detailed:"विस्तृत"
+    },
+    promptDescs: {
+      master_ai:"स्वचालित रूप से पहचानता है कि आप बिक्री में कहां हैं", idea_to_text:"अपना इरादा बताएं और AI टेक्स्ट लिखेगा", humanize:"AI टोन हटाता है, इसे स्वाभाविक बनाता है", improve:"व्याकरण और शैली सुधारता है", shorter:"अधिक संक्षिप्त, वही संदेश", expand:"विवरण और समृद्धि जोड़ता है", rephrase:"वही बात अलग तरीके से कहें", rewrite:"नया संस्करण, वही सार", active_voice:"निष्क्रिय को सक्रिय में बदलता है", formal:"पेशेवर और गंभीर टोन", email:"पूर्ण ईमेल प्रारूप", summary:"सूची में मुख्य बिंदु", action:"कार्य और अगले कदम निकालता है", pitch:"अकाट्य और सीधा प्रस्ताव", cta:"क्लिक और बिक्री बढ़ाने वाला CTA", benefits:"विशेषताओं को बिक्री मूल्य में बदलता है", objections:"संदेह और प्रतिरोध का जवाब देता है", ad_copy:"Facebook / Instagram विज्ञापन", followup:"प्रभावी फॉलो-अप संदेश", testimonial:"फीडबैक को सामाजिक प्रमाण में बदलता है", value_prop:"आपको अद्वितीय क्या बनाता है?", social_post:"LinkedIn, Instagram आदि", tweet:"280 अक्षरों से कम", threads:"500 अक्षरों के लिए अनुकूलित", hook:"पहली पंक्ति जो आकर्षित करती है", caption:"छवि के लिए कैप्शन", add_emojis:"रणनीतिक इमोजी जोड़ता है", to_english:"स्वाभाविक अनुवाद", to_spanish:"स्वाभाविक अनुवाद", to_french:"स्वाभाविक अनुवाद", to_portuguese:"स्वाभाविक अनुवाद", to_italian:"स्वाभाविक अनुवाद", to_other:"लक्ष्य भाषा निर्दिष्ट करें", reply:"एक जवाब लिखें", apologize:"एक ईमानदार माफी लिखें", detailed:"अधिक संदर्भ के साथ सटीक"
+    },
+  },
+  sw: {
+    categories: ["✨ Zote","🚀 MASTA","💡 Unda","✍️ Uandishi","💼 Kazi","🎯 Mauzo","📱 Mitandao","🌐 Tafsiri","💬 Ujumbe","🎨 Toni"],
+    inputLabel: "Maandishi yako",
+    inputLabelOpt: "Maandishi yako (si lazima)",
+    placeholder: "Andika, bandika au sema maandishi hapa…",
+    charUnit: "herufi",
+    quickReply: "💬 Jibu",
+    btnCopy: "📋 Nakili",
+    btnReplace: "⬆️ Tumia kama ingizo",
+    btnHumanize: "🫀 Fanya iwe ya kibinadamu",
+    btnToneResult: "🎨 Badilisha toni",
+    settingsTitle: "MIPANGILIO",
+    btnBack: "← Rudi",
+    outputLang: "Lugha ya jibu",
+    theme: "Mandhari",
+    themeDark: "🌙 Giza",
+    themeLight: "☀️ Mwanga",
+    defaultTone: "Toni chaguomsingi",
+    toneNeutral: "Wastani",
+    toneFormal: "Rasmi",
+    toneCasual: "Isiyo rasmi",
+    noHistory: "Bado hakuna historia.",
+    fileReady: "Tayari ✓",
+    fileRemoveTitle: "Ondoa faili",
+    btnRedo: "🔁 Rudia",
+    btnClear: "🗑 Futa",
+    sectionTitle: "MIPANGILIO",
+    sectionQuickActions: "Vitendo vya haraka",
+    toneStripLabel: "🎨 Ufikiaji wa haraka wa toni",
+    fileZoneText: "Ambatanisha karatasi ya kiufundi, nukuu au hati",
+    fileZoneSub: "PDF · JPG · PNG · WEBP",
+    profileTitle: "Wasifu wako",
+    profileUnconfigured: "Haijasanidiwa",
+    profileNameLabel: "JINA LAKO",
+    profileNameOptional: "(si lazima)",
+    profileGenderLabel: "JINSIA",
+    profileMale: "🧑 Mwanaume",
+    profileFemale: "👩 Mwanamke",
+    profileGenderMale: "Mwanaume",
+    profileGenderFemale: "Mwanamke",
+    profileGenderNone: "Jinsia haijawekwa",
+    btnSaveProfile: "💾 Hifadhi wasifu",
+    apikeyLabel: "🔑 Ufunguo wa API wa Anthropic",
+    btnSaveKey: "💾 Hifadhi ufunguo",
+    btnDelKey: "🗑 Futa ufunguo",
+    apikeyNoKey: "Hakuna ufunguo — hali ya Claude.ai (hutumia tokeni za akaunti yako)",
+    apikeyHasSaved: "Ufunguo umehifadhiwa",
+    apikeyInfoTitle: "Ni lini unahitaji ufunguo wa API?",
+    apikeyInfo: "• <strong>Ndani ya Claude.ai</strong> (mazungumzo haya): <em>huhitaji chochote</em>, programu hutumia akaunti na tokeni zako kiotomatiki.<br>• <strong>Nje ya Claude.ai</strong> (faili la ndani, seva yako, GitHub Pages): weka ufunguo wako kutoka <a href=\'https://console.anthropic.com/settings/keys\' target=\'_blank\'>console.anthropic.com</a>.<br><br>Ufunguo huhifadhiwa kwenye kifaa chako pekee na haujawahi kutumwa kwenye seva nyingine yoyote.",
+    privacyText: "<strong>Faragha:</strong> Maandishi na picha zako hutumwa kwa Claude (Anthropic) kwa uchakataji. Historia huhifadhiwa kwenye kifaa chako pekee.",
+    btnClearHistory: "🗑 Futa historia",
+    confirmClearHistory: "Futa historia yote?",
+    toastCleared: "🗑 Historia imefutwa",
+    toastCopied: "✅ Imenakiliwa!",
+    toastLoaded: "⬆️ Imepakiwa kama ingizo",
+    toastNoText: "✏️ Andika au bandika maandishi kwanza",
+    toastNoTextShort: "✏️ Andika maandishi kwanza",
+    toastNoFile: "Ambatanisha faili kwanza",
+    toastApiKeyRequired: "✏️ Weka ufunguo wako wa API",
+    toastApiKeyInvalid: "❌ Ufunguo batili (lazima uanze na sk-ant-)",
+    toastApiKeySaved: "✅ Ufunguo wa API umehifadhiwa",
+    toastApiKeyDeleted: "🗑 Ufunguo wa API umefutwa",
+    toastProfileSaved: "✅ Wasifu umehifadhiwa",
+    toastFilePdf: "✅ PDF tayari",
+    toastFileImg: "✅ Picha tayari",
+    toastFileError: "❌ Tumia PDF au picha",
+    toastFileReadError: "❌ Hitilafu kusoma faili",
+    toastHoldToCopy: "✋ Shikilia matokeo ili kunakili",
+    modalTranslateTitle: "🌐 Chagua lugha ya tafsiri",
+    modalTranslateSub: "Unataka kutafsiri kwa lugha gani?",
+    modalTranslatePlaceholder: "Mf: Kijerumani, Kijapani, Kiarabu, Kikorea...",
+    modalTranslateCancel: "Ghairi",
+    modalTranslateConfirm: "Tafsiri",
+    modalUiLangTitle: "🌐 Lugha ya kiolesura",
+    modalUiLangSub: "Chagua lugha ya kiolesura",
+    modalUiLangCancel: "Ghairi",
+    modalUiLangOther: "Lugha nyingine",
+    modalUiLangOtherSub: "Bainisha lugha lengwa",
+    modalRespLangTitle: "🌐 Lugha ya jibu",
+    modalRespLangSub: "Unataka AI ijibu kwa lugha gani?",
+    modalRespLangPlaceholder: "Mf: Kijapani, Kiarabu, Kichina, Kikorea...",
+    modalRespLangCancel: "Ghairi",
+    modalRespLangConfirm: "Tumia",
+    modalToneTitle: "🎨 Badilisha toni",
+    modalToneSub: "Chagua toni ya kuandika upya maandishi huku ukidumisha maana ya asili.",
+    modalToneApply: "Tumia toni",
+    modalToneCancel: "Ghairi",
+    toneNames: ["Fanya iwe ya kibinadamu","Mwenye adabu","Kimapenzi","Kimazungumzo","Mwenye huruma","Wa kuhamasisha","Wa masimulizi","Rahisi","Wa haraka","Wa kukumbukwa","Wa kuchekesha","Wa kishairi","Wa dhihaka","Wenye nguvu","Wa kuchezea","Mwerevu","Mwenye shauku","Thabiti","Wa kidiplomasia","Rasmi","Isiyo rasmi","Wa ushirikiano","Mzuri wa mtiririko","Mwenye ufahamu","Mwenye kujiamini","Wa kuvutia","Tunga mistari yenye mvumo","Geuza kuwa shairi"],
+    toneDescs: ["Huondoa toni ya AI, huifanya iwe halisi","Rasmi, wenye heshima na adabu","Wenye joto, hisia na mapenzi","Toni ya mazungumzo ya asili kati ya watu","Wenye uelewa, na msaada wa kihisia","Huhamasisha, huongeza nguvu","Simulizi lenye mwanzo, kilele na hisia","Maneno machache, athari zaidi","Huchochea kitendo cha haraka","Huamsha kumbukumbu na hisia za zamani","Chepesi, na ucheshi na akili","Sitiari, mdundo na urembo","Kejeli, maana mbili na ukali","Thabiti, wa moja kwa moja, na kutokubaliana","Wa kuchezea, wa hila na mwenye kujiamini","Mkali, mwerevu na wa neema","Wenye msisimko na uliojaa nguvu","Wa moja kwa moja, mwenye kujiamini bila kuzungusha","Wenye uwiano na tahadhari","Kitaalamu na mzito","Rafiki na mtulivu","Wa ushirikiano na timu","Usomaji laini na wa asili","Wenye joto la kibinadamu","Mwenye kujiamini na mamlaka","Wa kuvutia na kuvutia","Hubadilisha maandishi kuwa mistari yenye mvumo","Hubadilisha maandishi kuwa shairi"],
+    promptNames: {
+      master_ai:"MASTA — AI hutambua hatua", idea_to_text:"Unda kutoka kwa wazo", humanize:"Fanya iwe ya kibinadamu", improve:"Boresha", shorter:"Fupisha", expand:"Panua", rephrase:"Andika upya kwa maneno mengine", rewrite:"Andika upya", active_voice:"Sauti tendaji", formal:"Fanya iwe rasmi", email:"Barua pepe ya kitaalamu", summary:"Muhtasari", action:"Vipengele vya utekelezaji", pitch:"Wasilisho la mauzo", cta:"Wito wa kuchukua hatua", benefits:"Faida na manufaa", objections:"Kushughulikia pingamizi", ad_copy:"Maandishi ya tangazo", followup:"Ufuatiliaji", testimonial:"Ushuhuda", value_prop:"Pendekezo la thamani", social_post:"Chapisho la kijamii", tweet:"Tweet / X", threads:"Threads", hook:"Ndoano ya kuvutia", caption:"Maelezo ya picha", add_emojis:"+ Emoji", to_english:"Kwa Kiingereza", to_spanish:"Kwa Kihispania", to_french:"Kwa Kifaransa", to_portuguese:"Kwa Kireno", to_italian:"Kwa Kiitaliano", to_other:"Lugha nyingine", reply:"Jibu", apologize:"Omba radhi", detailed:"Kwa kina"
+    },
+    promptDescs: {
+      master_ai:"Hutambua kiotomatiki uko wapi katika mchakato wa mauzo", idea_to_text:"Eleza nia yako na AI itaandika maandishi", humanize:"Huondoa toni ya AI, huifanya iwe ya asili", improve:"Huboresha sarufi na mtindo", shorter:"Fupi zaidi, ujumbe uleule", expand:"Huongeza maelezo na utajiri", rephrase:"Sema jambo lile lile kwa njia nyingine", rewrite:"Toleo jipya, kiini kile kile", active_voice:"Hubadilisha tendwa kuwa tendaji", formal:"Toni ya kitaalamu na mzito", email:"Muundo kamili wa barua pepe", summary:"Vipengele muhimu katika orodha", action:"Hutoa kazi na hatua zijazo", pitch:"Pendekezo lisilokataliwa na la moja kwa moja", cta:"CTA inayozalisha mibofyo na mauzo", benefits:"Hubadilisha vipimo kuwa thamani ya mauzo", objections:"Hujibu shaka na upinzani", ad_copy:"Matangazo ya Facebook / Instagram", followup:"Ujumbe mzuri wa ufuatiliaji", testimonial:"Hubadilisha maoni kuwa ushahidi wa kijamii", value_prop:"Ni nini kinachokufanya wa kipekee?", social_post:"LinkedIn, Instagram, n.k.", tweet:"Chini ya herufi 280", threads:"Imeboreshwa kwa herufi 500", hook:"Mstari wa kwanza unaovutia", caption:"Maelezo ya picha", add_emojis:"Huongeza emoji za kimkakati", to_english:"Tafsiri ya asili", to_spanish:"Tafsiri ya asili", to_french:"Tafsiri ya asili", to_portuguese:"Tafsiri ya asili", to_italian:"Tafsiri ya asili", to_other:"Bainisha lugha lengwa", reply:"Andika jibu", apologize:"Andika radhi ya dhati", detailed:"Sahihi zaidi na muktadha zaidi"
+    },
+  },
 };
 
 // Helper: get UI strings for current language (fallback to ES)
@@ -1834,7 +2344,7 @@ function getT() {
 
 // Tone id order must match toneNames/toneDescs arrays in UI_STRINGS
 const TONE_IDS = ["tone_humanize","tone_polite","tone_romantic","tone_conversacional","tone_empathetic","tone_motivational","tone_storytelling","tone_minimal","tone_urgent","tone_nostalgic","tone_funny","tone_poetic","tone_sarcastic","tone_angry","tone_flirty","tone_witty","tone_enthusiastic","tone_assertive","tone_diplomatic","tone_formal","tone_casual","tone_cooperative","tone_fluent","tone_compassionate","tone_confident","tone_engaging","tone_versify","tone_poemify"];
-const UI_LANG_FLAGS  = { auto:"🌐", es:"🇪🇸", en:"🇺🇸", de:"🇩🇪", fr:"🇫🇷", it:"🇮🇹", pt:"🇧🇷", zh:"🇨🇳", ja:"🇯🇵", ko:"🇰🇷" };
+const UI_LANG_FLAGS  = { auto:"🌐", es:"🇪🇸", en:"🇺🇸", de:"🇩🇪", fr:"🇫🇷", it:"🇮🇹", pt:"🇧🇷", uk:"🇺🇦", ru:"🇷🇺", he:"🇮🇱", zh:"🇨🇳", ja:"🇯🇵", ko:"🇰🇷", hi:"🇮🇳", sw:"🇰🇪" };
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let currentView    = "main";
@@ -1954,6 +2464,7 @@ function applyUiLang(l) {
   if (fileZoneTextEl) fileZoneTextEl.textContent = t.fileZoneText;
   const fileZoneSubEl = document.querySelector("#file-zone .file-sub");
   if (fileZoneSubEl) fileZoneSubEl.textContent = t.fileZoneSub;
+  if (fileZone) fileZone.title = t.fileZoneText;
 
   // ── Result card buttons ──────────────────────────────────────────────────────
   const btnCopy = document.getElementById("btn-copy");
@@ -2187,7 +2698,7 @@ async function processFile(file) {
 }
 
 // ─── OUTPUT LANG HELPER ───────────────────────────────────────────────────────
-const LANG_NAMES = { es:"Spanish", en:"English", de:"German", fr:"French", it:"Italian", pt:"Portuguese", zh:"Chinese", ja:"Japanese", ko:"Korean" };
+const LANG_NAMES = { es:"Spanish", en:"English", de:"German", fr:"French", it:"Italian", pt:"Portuguese", uk:"Ukrainian", ru:"Russian", he:"Hebrew", zh:"Chinese", ja:"Japanese", ko:"Korean", hi:"Hindi", sw:"Swahili" };
 
 function getLangInstruction() {
   if (lang === "auto") return "";
