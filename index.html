@@ -152,12 +152,13 @@
   .file-sub { font-size: 11px; color: var(--faint); margin-top: 3px; }
 
   .file-zone.compact {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 30px; height: 30px; padding: 0; border: 1.5px solid var(--border); border-radius: 50%;
-    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    width: auto; height: auto; padding: 5px 11px; border: 1.5px solid var(--border); border-radius: 12px;
+    flex-shrink: 0; white-space: nowrap;
   }
   .file-zone.compact.hover { border-color: var(--accent); background: rgba(var(--accent-rgb),0.07); }
-  .file-zone.compact .file-icon { font-size: 15px; margin-bottom: 0; }
+  .file-zone.compact .file-icon-svg { color: var(--muted); flex-shrink: 0; }
+  .file-zone.compact .file-zone-label { font-size: 12px; font-weight: 600; color: var(--muted); }
   .file-zone.compact .file-text, .file-zone.compact .file-sub { display: none; }
 
   .file-attached {
@@ -624,7 +625,8 @@
       <div style="display:flex;gap:6px;align-items:center">
         <div id="file-zone" class="file-zone compact" title="Adjuntar ficha técnica, cotización o documento">
           <input type="file" id="file-input" accept=".pdf,image/*" />
-          <div class="file-icon">📎</div>
+          <svg class="file-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.67 3.67 0 0 1 5.19 5.19l-9.2 9.19a1.83 1.83 0 0 1-2.59-2.59l8.49-8.48"/></svg>
+          <span class="file-zone-label" id="file-zone-label">Adjuntar</span>
           <div class="file-text">Adjuntar ficha técnica, cotización o documento</div>
           <div class="file-sub">PDF · JPG · PNG · WEBP</div>
         </div>
@@ -738,6 +740,10 @@
   <div class="settings-card">
     <div class="settings-section">
       <div class="settings-label" data-i18n="outputLang">Idioma de respuesta</div>
+      <div class="settings-tag-row" id="lang-btns">
+        <button class="stag active" data-lang="auto">✨ Auto</button>
+        <button class="stag" data-lang="es"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg> Español</button>
+        <button class="stag" data-lang="en"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><gss="settings-label" data-i18n="outputLang">Idioma de respuesta</div>
       <div class="settings-tag-row" id="lang-btns">
         <button class="stag active" data-lang="auto">✨ Auto</button>
         <button class="stag" data-lang="es"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg> Español</button>
