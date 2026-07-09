@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>Nexus</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- ══ Firebase (sincronización de preferencias entre dispositivos) ══ -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   ::-webkit-scrollbar { display: none; }
@@ -587,6 +591,44 @@
 </style>
 </head>
 <body>
+<style>
+  .auth-gate-overlay{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(6,10,16,.92);backdrop-filter:blur(6px);padding:20px;}
+  .auth-gate-box{width:100%;max-width:380px;background:#0e1620;border:1px solid rgba(0,245,196,.25);
+    border-radius:18px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .auth-gate-box h2{margin:0 0 6px;font-size:1.25rem;color:#f2f6f8;}
+  .auth-gate-sub{margin:0 0 20px;color:#8a97a3;font-size:.85rem;}
+  .auth-gate-box input{width:100%;box-sizing:border-box;margin-bottom:10px;padding:11px 12px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.12);background:#141d29;color:#f2f6f8;font-size:.95rem;}
+  .auth-gate-btn{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:none;
+    font-weight:600;font-size:.9rem;cursor:pointer;margin-bottom:10px;}
+  .auth-gate-btn.google{background:#fff;color:#1f1f1f;}
+  .auth-gate-btn.primary{background:#00F5C4;color:#052018;}
+  .auth-gate-btn.neutral{background:#1c2733;color:#e8eef2;border:1px solid rgba(255,255,255,.1);}
+  .auth-gate-row{display:flex;gap:8px;}
+  .auth-gate-row .auth-gate-btn{margin-bottom:0;}
+  .auth-gate-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:#5c6975;font-size:.75rem;}
+  .auth-gate-divider::before,.auth-gate-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1);}
+  .auth-gate-msg{margin-top:8px;font-size:.8rem;min-height:16px;line-height:1.4;}
+</style>
+<div id="authGateOverlay" class="auth-gate-overlay">
+  <div class="auth-gate-box">
+    <h2>🔒 Inicia sesión para continuar</h2>
+    <p class="auth-gate-sub">Tus datos se guardan de forma segura y sincronizada entre tus dispositivos.</p>
+    <button id="gateGoogleBtn" class="auth-gate-btn google" type="button">🔵 Continuar con Google</button>
+    <div class="auth-gate-divider"><span>o con tu email</span></div>
+    <input type="email" id="gateEmail" placeholder="tu@email.com" autocomplete="email">
+    <input type="password" id="gatePass" placeholder="Contraseña (mínimo 6 caracteres)" autocomplete="current-password">
+    <div class="auth-gate-row">
+      <button id="gateLoginBtn" class="auth-gate-btn primary" type="button">Iniciar sesión</button>
+      <button id="gateRegisterBtn" class="auth-gate-btn neutral" type="button">Crear cuenta</button>
+    </div>
+    <div class="auth-gate-divider"><span>o sin contraseña</span></div>
+    <button id="gateLinkBtn" class="auth-gate-btn neutral" type="button">✉️ Enviarme un enlace de acceso</button>
+    <div id="gateMsg" class="auth-gate-msg"></div>
+  </div>
+</div>
+
 
 <!-- HEADER -->
 <header id="header">
@@ -743,10 +785,6 @@
       <div class="settings-tag-row" id="lang-btns">
         <button class="stag active" data-lang="auto">✨ Auto</button>
         <button class="stag" data-lang="es"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg> Español</button>
-        <button class="stag" data-lang="en"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><gss="settings-label" data-i18n="outputLang">Idioma de respuesta</div>
-      <div class="settings-tag-row" id="lang-btns">
-        <button class="stag active" data-lang="auto">✨ Auto</button>
-        <button class="stag" data-lang="es"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg> Español</button>
         <button class="stag" data-lang="en"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="8" height="7.54" fill="#3C3B6E"/></svg> English</button>
         <button class="stag" data-lang="de"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#000"/><rect y="4.67" width="20" height="4.67" fill="#DD0000"/><rect y="9.33" width="20" height="4.67" fill="#FFCE00"/></svg> Deutsch</button>
         <button class="stag" data-lang="fr"><svg class="flag-ico" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#0055A4"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg> Français</button>
@@ -797,6 +835,26 @@
       <div class="apikey-info-box">
         <strong id="apikey-info-title">¿Cuándo necesitas una API Key?</strong><br>
         <span id="apikey-info-body">• <strong>Dentro de Claude.ai</strong> (este chat): <em>no necesitas nada</em> para Claude, la app usa tu cuenta y tokens automáticamente.<br>• <strong>Fuera de Claude.ai</strong> (archivo local, tu servidor, GitHub Pages): ingresa tus claves.<br><br>Las claves se guardan solo en tu dispositivo y nunca se envían a ningún servidor ajeno.</span>
+      </div>
+    </div>
+
+    <!-- Cuenta y sincronización -->
+    <div class="settings-section">
+      <div class="settings-label">🔗 Cuenta y sincronización</div>
+      <p id="fbAccountStatus" style="font-size:12px;opacity:.7;margin:-6px 0 10px">Conectando…</p>
+      <div id="fbAccountForm">
+        <div class="input-label">CORREO</div>
+        <input class="profile-name-input" id="fbEmail" type="email" placeholder="tu@correo.com" autocomplete="off" style="margin-bottom:10px" />
+        <div class="input-label">CONTRASEÑA</div>
+        <input class="profile-name-input" id="fbPass" type="password" placeholder="Mínimo 6 caracteres" autocomplete="off" style="margin-bottom:12px" />
+        <div style="display:flex;gap:8px">
+          <button class="btn-save-profile" id="fbCreateBtn" style="flex:1">✦ Crear cuenta</button>
+          <button class="stag" id="fbSignInBtn" style="flex:1">Iniciar sesión</button>
+        </div>
+        <p style="font-size:11px;opacity:.65;margin-top:10px">Crear una cuenta vincula lo que ya tienes en este dispositivo — no pierdes nada. Así puedes seguir donde quedaste desde tu celular, tablet o computadora.</p>
+      </div>
+      <div id="fbAccountSignedIn" style="display:none">
+        <button class="btn-danger" id="fbSignOutBtn" style="font-size:13px;padding:10px 18px;border-radius:14px;width:100%">🚪 Cerrar sesión</button>
       </div>
     </div>
 
@@ -1034,6 +1092,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Acciones rápidas",
     toneStripLabel: "🎨 Accesos rápidos de tono",
     fileZoneText: "Adjuntar ficha técnica, cotización o documento",
+    fileZoneLabel: "Adjuntar",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Tu Perfil",
     profileUnconfigured: "Sin configurar",
@@ -1129,6 +1188,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Quick actions",
     toneStripLabel: "🎨 Tone quick access",
     fileZoneText: "Attach spec sheet, quote or document",
+    fileZoneLabel: "Attach",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Your Profile",
     profileUnconfigured: "Not set",
@@ -1224,6 +1284,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Schnellaktionen",
     toneStripLabel: "🎨 Ton-Schnellzugriff",
     fileZoneText: "Datenblatt, Angebot oder Dokument anhängen",
+    fileZoneLabel: "Anhängen",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Ihr Profil",
     profileUnconfigured: "Nicht konfiguriert",
@@ -1319,6 +1380,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Actions rapides",
     toneStripLabel: "🎨 Accès rapide aux tons",
     fileZoneText: "Joindre fiche technique, devis ou document",
+    fileZoneLabel: "Joindre",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Votre Profil",
     profileUnconfigured: "Non configuré",
@@ -1414,6 +1476,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Ações rápidas",
     toneStripLabel: "🎨 Acesso rápido de tons",
     fileZoneText: "Anexar ficha técnica, cotação ou documento",
+    fileZoneLabel: "Anexar",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Seu Perfil",
     profileUnconfigured: "Não configurado",
@@ -1509,6 +1572,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Azioni rapide",
     toneStripLabel: "🎨 Accesso rapido ai toni",
     fileZoneText: "Allega scheda tecnica, preventivo o documento",
+    fileZoneLabel: "Allega",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Il tuo Profilo",
     profileUnconfigured: "Non configurato",
@@ -1604,6 +1668,7 @@ const UI_STRINGS = {
     sectionQuickActions: "快捷操作",
     toneStripLabel: "🎨 语气快捷方式",
     fileZoneText: "附加规格表、报价单或文档",
+    fileZoneLabel: "附加",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "您的资料",
     profileUnconfigured: "未配置",
@@ -1699,6 +1764,7 @@ const UI_STRINGS = {
     sectionQuickActions: "クイックアクション",
     toneStripLabel: "🎨 トーンクイックアクセス",
     fileZoneText: "仕様書、見積書またはドキュメントを添付",
+    fileZoneLabel: "添付",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "あなたのプロフィール",
     profileUnconfigured: "未設定",
@@ -1794,6 +1860,7 @@ const UI_STRINGS = {
     sectionQuickActions: "빠른 작업",
     toneStripLabel: "🎨 톤 빠른 접근",
     fileZoneText: "사양서, 견적서 또는 문서 첨부",
+    fileZoneLabel: "첨부",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "내 프로필",
     profileUnconfigured: "미설정",
@@ -1890,6 +1957,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Швидкі дії",
     toneStripLabel: "🎨 Швидкий доступ до тонів",
     fileZoneText: "Прикріпіть техпаспорт, кошторис або документ",
+    fileZoneLabel: "Прикріпити",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Ваш профіль",
     profileUnconfigured: "Не налаштовано",
@@ -1986,6 +2054,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Быстрые действия",
     toneStripLabel: "🎨 Быстрый доступ к тонам",
     fileZoneText: "Прикрепите техпаспорт, смету или документ",
+    fileZoneLabel: "Прикрепить",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Ваш профиль",
     profileUnconfigured: "Не настроено",
@@ -2082,6 +2151,7 @@ const UI_STRINGS = {
     sectionQuickActions: "פעולות מהירות",
     toneStripLabel: "🎨 גישה מהירה לטונים",
     fileZoneText: "צרף גיליון טכני, הצעת מחיר או מסמך",
+    fileZoneLabel: "צרף",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "הפרופיל שלך",
     profileUnconfigured: "לא הוגדר",
@@ -2178,6 +2248,7 @@ const UI_STRINGS = {
     sectionQuickActions: "त्वरित क्रियाएं",
     toneStripLabel: "🎨 टोन के लिए त्वरित पहुंच",
     fileZoneText: "तकनीकी शीट, कोटेशन या दस्तावेज़ संलग्न करें",
+    fileZoneLabel: "संलग्न करें",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "आपकी प्रोफ़ाइल",
     profileUnconfigured: "कॉन्फ़िगर नहीं किया गया",
@@ -2274,6 +2345,7 @@ const UI_STRINGS = {
     sectionQuickActions: "Vitendo vya haraka",
     toneStripLabel: "🎨 Ufikiaji wa haraka wa toni",
     fileZoneText: "Ambatanisha karatasi ya kiufundi, nukuu au hati",
+    fileZoneLabel: "Ambatanisha",
     fileZoneSub: "PDF · JPG · PNG · WEBP",
     profileTitle: "Wasifu wako",
     profileUnconfigured: "Haijasanidiwa",
@@ -2407,6 +2479,244 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 2500);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ── FIREBASE: sesión + sincronización de preferencias entre dispositivos ──
+// NUNCA sincroniza: API keys (CFG.*), que se quedan solo en este dispositivo.
+// SÍ sincroniza: tema, idioma de interfaz, idioma de respuesta, tono por
+// defecto y perfil (nombre/género). El historial de esta app guarda hasta 50
+// entradas con el texto de salida completo — no es "chico y acotado" como
+// pide la guía, así que NO se sincroniza (se queda local, como ya estaba).
+// ═══════════════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyATTrYMqivDJGLhQYDDjEqLCyv-YEMSK2A",
+  authDomain: "nexus-pro-plus.firebaseapp.com",
+  projectId: "nexus-pro-plus",
+  storageBucket: "nexus-pro-plus.firebasestorage.app",
+  messagingSenderId: "5726048688",
+  appId: "1:5726048688:web:7ca10f034c933822008675",
+  measurementId: "G-J8CCJVDTN5"
+};
+let fbApp=null, fbAuth=null, fbDb=null, fbUser=null, fbUnsub=null;
+let fbSaveTimer=null, fbReady=false, fbApplyingRemote=false;
+
+// ── Guarda en Firestore (agrupado, con retraso de ~500ms) ────────────────────
+function fbScheduleSave(){
+  if(fbApplyingRemote) return;
+  if(!fbReady||!fbUser||!fbDb) return;
+  clearTimeout(fbSaveTimer);
+  fbSaveTimer=setTimeout(fbFlushSave,500);
+}
+async function fbFlushSave(){
+  if(!fbReady||!fbUser||!fbDb) return;
+  try{
+    await fbDb.collection('usuarios').doc(fbUser.uid).set({
+      prefs:{ theme:appTheme, uiLang, respLang:lang, defaultTone:tone, profileName:userProfile.name||'', profileGender:userProfile.gender||'' },
+      apiKeys: CFG,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+  }catch(e){ console.warn('Firebase: no se pudo guardar',e); }
+}
+
+// ── Aplica un doc remoto recibido por onSnapshot ──────────────────────────────
+function fbApplyRemote(data){
+  if(!data) return;
+  fbApplyingRemote=true;
+  if(data.prefs){
+    const p=data.prefs;
+    if(p.theme && p.theme!==appTheme) applyTheme(p.theme);
+    if(p.uiLang && p.uiLang!==uiLang) applyUiLang(p.uiLang);
+    if(p.respLang && p.respLang!==lang){
+      lang=p.respLang; localStorage.setItem("keyai_lang", lang);
+      document.querySelectorAll("#lang-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.lang===lang));
+    }
+    if(p.defaultTone && p.defaultTone!==tone){
+      tone=p.defaultTone; localStorage.setItem("keyai_tone", tone);
+      document.querySelectorAll("#tone-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.tone===tone));
+    }
+    if(typeof p.profileName==='string' || p.profileGender){
+      userProfile.name = typeof p.profileName==='string' ? p.profileName : userProfile.name;
+      userProfile.gender = p.profileGender || userProfile.gender;
+      localStorage.setItem("keyai_profile", JSON.stringify(userProfile));
+      if(typeof loadProfileUI==='function') loadProfileUI();
+    }
+  }
+  // ── API Keys: si la nube trae claves que no tenemos localmente, las adoptamos ──
+  if(data.apiKeys && typeof data.apiKeys==='object'){
+    let cambioKeys=false;
+    Object.keys(CFG).forEach(provider=>{
+      const remoteVal = data.apiKeys[provider];
+      if(typeof remoteVal==='string' && remoteVal && remoteVal!==CFG[provider]){
+        CFG[provider]=remoteVal; cambioKeys=true;
+      }
+    });
+    if(cambioKeys){
+      cfgSaveLocal();
+      if(typeof loadApiKeyUI==='function') loadApiKeyUI();
+    }
+  }
+  fbApplyingRemote=false;
+}
+
+// ── Escucha en tiempo real el documento del usuario ───────────────────────────
+function fbListenUser(){
+  if(fbUnsub){ fbUnsub(); fbUnsub=null; }
+  if(!fbUser||!fbDb) return;
+  fbUnsub=fbDb.collection('usuarios').doc(fbUser.uid).onSnapshot({includeMetadataChanges:true},(snap)=>{
+    if(snap.metadata.hasPendingWrites){ return; } // ignora el eco de nuestras propias escrituras
+    if(snap.exists) fbApplyRemote(snap.data());
+  },(err)=>console.warn('Firebase: listener falló',err));
+}
+
+// ─── Auth Gate: exige inicio de sesión real en navegador (no aplica en modo artefacto) ──
+const AUTH_GATE_EMAIL_KEY = 'nexusAuthGateEmail';
+
+function showAuthGate(){ const el=document.getElementById('authGateOverlay'); if(el) el.style.display='flex'; }
+function hideAuthGate(){ const el=document.getElementById('authGateOverlay'); if(el) el.style.display='none'; }
+function gateMsg(text, isError){
+  const m=document.getElementById('gateMsg'); if(!m) return;
+  m.textContent = text||''; m.style.color = isError ? '#ff6b6b' : '#00F5C4';
+}
+async function gateSignInGoogle(){
+  try{ await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+  catch(e){ gateMsg('No se pudo iniciar sesión con Google: '+(e.message||e.code), true); }
+}
+async function gateSignInEmail(){
+  const email=(document.getElementById('gateEmail').value||'').trim();
+  const pass=document.getElementById('gatePass').value||'';
+  if(!email||!pass){ gateMsg('Escribe email y contraseña.', true); return; }
+  try{ await fbAuth.signInWithEmailAndPassword(email, pass); }
+  catch(e){ gateMsg('No se pudo iniciar sesión: '+(e.message||e.code), true); }
+}
+async function gateRegisterEmail(){
+  const email=(document.getElementById('gateEmail').value||'').trim();
+  const pass=document.getElementById('gatePass').value||'';
+  if(!email||!pass){ gateMsg('Escribe email y contraseña.', true); return; }
+  try{ await fbAuth.createUserWithEmailAndPassword(email, pass); }
+  catch(e){
+    if(e.code==='auth/email-already-in-use') gateMsg('Ese email ya tiene cuenta. Usa "Iniciar sesión".', true);
+    else if(e.code==='auth/weak-password') gateMsg('La contraseña debe tener al menos 6 caracteres.', true);
+    else gateMsg('No se pudo crear la cuenta: '+(e.message||e.code), true);
+  }
+}
+async function gateSendEmailLink(){
+  const email=(document.getElementById('gateEmail').value||'').trim();
+  if(!email){ gateMsg('Escribe tu email para enviarte el enlace.', true); return; }
+  const actionCodeSettings = { url: window.location.href.split('#')[0], handleCodeInApp: true };
+  try{
+    await fbAuth.sendSignInLinkToEmail(email, actionCodeSettings);
+    window.localStorage.setItem(AUTH_GATE_EMAIL_KEY, email);
+    gateMsg('✅ Te enviamos un enlace a '+email+'. Ábrelo desde este mismo navegador para entrar.', false);
+  }catch(e){ gateMsg('No se pudo enviar el enlace: '+(e.message||e.code), true); }
+}
+async function gateCompleteEmailLinkIfNeeded(){
+  try{
+    if(fbAuth.isSignInWithEmailLink(window.location.href)){
+      let email = window.localStorage.getItem(AUTH_GATE_EMAIL_KEY);
+      if(!email) email = window.prompt('Confirma tu email para completar el acceso:');
+      if(email){
+        await fbAuth.signInWithEmailLink(email, window.location.href);
+        window.localStorage.removeItem(AUTH_GATE_EMAIL_KEY);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }catch(e){ console.warn('[Nube] No se pudo completar el acceso por enlace:', e); }
+}
+function initAuthGate(){
+  const map=[['gateGoogleBtn',gateSignInGoogle],['gateLoginBtn',gateSignInEmail],
+             ['gateRegisterBtn',gateRegisterEmail],['gateLinkBtn',gateSendEmailLink]];
+  map.forEach(([id,fn])=>{ const b=document.getElementById(id); if(b) b.addEventListener('click', fn); });
+}
+
+// ── Inicialización: exige login real en navegador (Google / email+contraseña / enlace por correo) ──
+async function fbInit(){
+  if(typeof firebase==='undefined'){
+    fbUpdateAccountUI();
+    return;
+  }
+  try{
+    fbApp=firebase.initializeApp(firebaseConfig);
+    fbAuth=firebase.auth();
+    fbDb=firebase.firestore();
+    try{ await fbDb.enablePersistence({synchronizeTabs:true}); }catch(e){}
+    initAuthGate();
+    await gateCompleteEmailLinkIfNeeded();
+    fbAuth.onAuthStateChanged(async (user)=>{
+      if(user){
+        hideAuthGate();
+        fbUser=user; fbReady=true;
+        try{
+          const doc=await fbDb.collection('usuarios').doc(user.uid).get();
+          if(doc.exists) fbApplyRemote(doc.data());
+          else fbFlushSave();
+        }catch(e){}
+        fbListenUser();
+        fbUpdateAccountUI();
+      } else {
+        // Ya no se crea sesión anónima automática: en navegador real se exige login (Google, email+contraseña o enlace por correo)
+        showAuthGate();
+      }
+    });
+  }catch(e){ console.warn('Firebase: no disponible en este entorno',e); fbUpdateAccountUI(); }
+}
+
+// ── Cuenta y sincronización (UI en Configuración) ─────────────────────────────
+function fbUpdateAccountUI(){
+  const statusEl=document.getElementById('fbAccountStatus');
+  const formEl=document.getElementById('fbAccountForm');
+  const signedInEl=document.getElementById('fbAccountSignedIn');
+  if(!statusEl) return;
+  if(typeof firebase==='undefined'){
+    statusEl.textContent='⚠️ Sincronización no disponible en este visor (bloquea Google). Abre el archivo en un navegador normal para usarla.';
+    if(formEl) formEl.style.display='none';
+    if(signedInEl) signedInEl.style.display='none';
+    return;
+  }
+  const isAnon = fbUser && fbUser.isAnonymous;
+  const isReal = fbUser && !fbUser.isAnonymous;
+  statusEl.textContent = isReal ? `Conectado como ${fbUser.email}` : (isAnon ? 'Modo invitado — tus preferencias se guardan, pero solo en este dispositivo hasta que crees una cuenta.' : 'Conectando…');
+  if(formEl) formEl.style.display = isReal ? 'none' : 'block';
+  if(signedInEl) signedInEl.style.display = isReal ? 'flex' : 'none';
+}
+async function fbCreateAccount(email,pass){
+  if(!fbAuth||!fbUser) return showToast('Sincronización no disponible');
+  try{
+    const cred=firebase.auth.EmailAuthProvider.credential(email,pass);
+    await fbUser.linkWithCredential(cred);
+    fbUser=fbAuth.currentUser;
+    fbUpdateAccountUI(); fbListenUser();
+    showToast('✅ Cuenta creada — ahora sincroniza entre dispositivos');
+  }catch(e){ showToast('❌ '+(e.message||'No se pudo crear la cuenta')); }
+}
+async function fbSignIn(email,pass){
+  if(!fbAuth) return showToast('Sincronización no disponible');
+  try{
+    await fbAuth.signInWithEmailAndPassword(email,pass);
+    showToast('✅ Sesión iniciada');
+  }catch(e){ showToast('❌ '+(e.message||'No se pudo iniciar sesión')); }
+}
+async function fbSignOutUser(){
+  if(!fbAuth) return;
+  try{ await fbAuth.signOut(); }catch(e){}
+}
+function initAccountSyncUI(){
+  const createBtn=document.getElementById('fbCreateBtn');
+  const signInBtn=document.getElementById('fbSignInBtn');
+  const signOutBtn=document.getElementById('fbSignOutBtn');
+  const emailInput=document.getElementById('fbEmail');
+  const passInput=document.getElementById('fbPass');
+  if(createBtn) createBtn.addEventListener('click',()=>{
+    const email=(emailInput?.value||'').trim(), pass=passInput?.value||'';
+    if(!email||pass.length<6) return showToast('Correo válido y contraseña de 6+ caracteres');
+    fbCreateAccount(email,pass);
+  });
+  if(signInBtn) signInBtn.addEventListener('click',()=>{
+    const email=(emailInput?.value||'').trim(), pass=passInput?.value||'';
+    if(!email||!pass) return showToast('Ingresa correo y contraseña');
+    fbSignIn(email,pass);
+  });
+  if(signOutBtn) signOutBtn.addEventListener('click',fbSignOutUser);
+}
+
 function setView(v) {
   currentView = v;
   [viewMain, viewHistory, viewSettings].forEach(el => el.classList.remove("active"));
@@ -2426,6 +2736,7 @@ function applyTheme(t) {
   document.getElementById("btn-theme").textContent = t === "dark" ? "☀️" : "🌙";
   document.querySelectorAll("#theme-btns .stag").forEach(b =>
     b.classList.toggle("active", b.dataset.themeVal === t));
+  fbScheduleSave();
 }
 
 document.getElementById("btn-theme").addEventListener("click", () =>
@@ -2470,6 +2781,8 @@ function applyUiLang(l) {
   if (fileZoneTextEl) fileZoneTextEl.textContent = t.fileZoneText;
   const fileZoneSubEl = document.querySelector("#file-zone .file-sub");
   if (fileZoneSubEl) fileZoneSubEl.textContent = t.fileZoneSub;
+  const fileZoneLabelEl = document.getElementById("file-zone-label");
+  if (fileZoneLabelEl) fileZoneLabelEl.textContent = t.fileZoneLabel || t.fileZoneText;
   if (fileZone) fileZone.title = t.fileZoneText;
 
   // ── Result card buttons ──────────────────────────────────────────────────────
@@ -2619,6 +2932,7 @@ function applyUiLang(l) {
     b.classList.toggle("active", b.dataset.lang === lang));
   document.querySelectorAll("#tone-btns .stag").forEach(b =>
     b.classList.toggle("active", b.dataset.tone === tone));
+  fbScheduleSave();
 }
 
 document.getElementById("btn-ui-lang").addEventListener("click", () =>
@@ -2750,6 +3064,20 @@ async function _fetchWithRetry(url, opts, maxRetries=2){
   }
 }
 async function callClaudeAI(messages, system, opts={}){
+  // 1) Modo artefacto: si esta app corre dentro de Claude.ai, esta llamada
+  //    (sin x-api-key) es respondida directamente por el entorno, sin pedir API Key.
+  try{
+    const probeBody = { model:"claude-sonnet-4-6", max_tokens:opts.maxTokens||1500, messages };
+    if(system) probeBody.system = system;
+    const probe = await _fetchWithRetry("https://api.anthropic.com/v1/messages", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(probeBody) }, 0);
+    if(probe.res && probe.res.ok){
+      const data = await probe.res.json();
+      const text = (data.content||[]).map(b=>b.text||"").join("");
+      if(text) return { ok:true, text, label:"Claude" };
+    }
+  }catch(e){ /* no estamos en el entorno de Claude.ai: seguimos con API Key propia */ }
+
+  // 2) Modo navegador normal: requiere API Key propia del usuario
   if(!CFG.claude) return { error:"NO_KEY", message:"Falta la API Key de Claude" };
   for(const model of (opts.models||CLAUDE_MODELS)){
     const body = { model, max_tokens:opts.maxTokens||1500, messages };
@@ -2808,11 +3136,10 @@ const callChatGPTAI = (messages, system, opts={}) => _callOpenAICompatibleAI(mes
 const callGrokAI    = (messages, system, opts={}) => _callOpenAICompatibleAI(messages, system, CFG.grok, opts.models||GROK_MODELS, "https://api.x.ai/v1/chat/completions", "Grok", opts);
 async function callAI(messages, system, opts={}){
   const providers=[];
-  if(CFG.claude)  providers.push(()=>callClaudeAI(messages,system,opts));
+  providers.push(()=>callClaudeAI(messages,system,opts)); // Claude: funciona sin key dentro de Claude.ai (modo artefacto)
   if(CFG.gemini)  providers.push(()=>callGeminiAI(messages,system,opts));
   if(CFG.chatgpt) providers.push(()=>callChatGPTAI(messages,system,opts));
   if(CFG.grok)    providers.push(()=>callGrokAI(messages,system,opts));
-  if(!providers.length) return { error:"NO_KEY", message:"No hay ninguna API Key configurada. Ve a Configuración." };
   let last=null;
   for(const fn of providers){ const r=await fn(); if(r.ok) return r; last=r; }
   return last || { error:"NO_MODEL", message:"Ningún proveedor respondió" };
@@ -3101,6 +3428,7 @@ document.getElementById("lang-btns").addEventListener("click", e => {
   lang = v;
   localStorage.setItem("keyai_lang", v);
   document.querySelectorAll("#lang-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.lang===v));
+  fbScheduleSave();
 });
 
 document.getElementById("tone-btns").addEventListener("click", e => {
@@ -3109,6 +3437,7 @@ document.getElementById("tone-btns").addEventListener("click", e => {
   tone = v;
   localStorage.setItem("keyai_tone", v);
   document.querySelectorAll("#tone-btns .stag").forEach(b => b.classList.toggle("active", b.dataset.tone===v));
+  fbScheduleSave();
 });
 
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
@@ -3142,6 +3471,7 @@ document.getElementById("btn-save-profile").addEventListener("click", () => {
   localStorage.setItem("keyai_profile", JSON.stringify(userProfile));
   loadProfileUI();
   showToast(getT().toastProfileSaved);
+  fbScheduleSave();
 });
 
 // ─── APIs DE IA (multi-proveedor) ──────────────────────────────────────────────
@@ -3244,6 +3574,7 @@ function loadApiKeyUI() {
       if (cfgValidateKey(p.id, val) === false) { showToast("⚠️ Formato de clave no reconocido para " + p.label); }
       CFG[p.id] = val;
       cfgSaveLocal();
+      fbScheduleSave();
       loadApiKeyUI();
       showToast("✓ API Key de " + p.label + " guardada, verificando conexión…");
       const dot2 = document.getElementById("apikey-dot-"+p.id);
@@ -3284,6 +3615,7 @@ function loadApiKeyUI() {
     list.querySelector(`[data-del="${p.id}"]`).addEventListener("click", () => {
       CFG[p.id] = "";
       cfgSaveLocal();
+      fbScheduleSave();
       loadApiKeyUI();
       showToast("Clave de " + p.label + " borrada");
     });
@@ -3775,6 +4107,8 @@ renderToneStrip();
 updateFileUI();
 loadApiKeyUI();
 loadProfileUI();
+initAccountSyncUI();
+fbInit();
 </script>
 </body>
 </html>
