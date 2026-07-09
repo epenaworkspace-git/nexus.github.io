@@ -2487,15 +2487,21 @@ function showToast(msg) {
 // entradas con el texto de salida completo — no es "chico y acotado" como
 // pide la guía, así que NO se sincroniza (se queda local, como ya estaba).
 // ═══════════════════════════════════════════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyATTrYMqivDJGLhQYDDjEqLCyv-YEMSK2A",
-  authDomain: "nexus-pro-plus.firebaseapp.com",
-  projectId: "nexus-pro-plus",
-  storageBucket: "nexus-pro-plus.firebasestorage.app",
-  messagingSenderId: "5726048688",
-  appId: "1:5726048688:web:7ca10f034c933822008675",
-  measurementId: "G-J8CCJVDTN5"
-};
+const firebaseConfig = (function(){
+  var LS_KEY = 'fbcfg_nexus';
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch(e) { saved = null; }
+  if (saved && saved.apiKey) return saved;
+  var pasted = window.prompt('Configuracion de Firebase para Nexus (solo la primera vez en este dispositivo).\nPega aqui el JSON de configuracion:');
+  if (pasted) {
+    try {
+      var cfg = JSON.parse(pasted);
+      localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+      return cfg;
+    } catch(e) { console.warn('Configuracion de Firebase invalida, la sincronizacion quedara desactivada.'); }
+  }
+  return { apiKey:'', authDomain:'', projectId:'', storageBucket:'', messagingSenderId:'', appId:'' };
+})();
 let fbApp=null, fbAuth=null, fbDb=null, fbUser=null, fbUnsub=null;
 let fbSaveTimer=null, fbReady=false, fbApplyingRemote=false;
 
