@@ -4135,6 +4135,53 @@ loadApiKeyUI();
 loadProfileUI();
 initAccountSyncUI();
 fbInit();
+
+// ─── Drag-to-scroll con mouse para carruseles (cursor "manita") ─────────────
+(function(){
+  const selectors = ['#tabs','.tone-strip'];
+  function initDragScroll(el){
+    if(!el || el.dataset.dragInit) return;
+    el.dataset.dragInit = '1';
+    let isDown=false, startX=0, scrollLeft=0, moved=false;
+    el.style.cursor='grab';
+    // capture:true para que funcione aunque el clic inicie sobre un botón/pill interno
+    el.addEventListener('mousedown', e=>{
+      isDown=true; moved=false;
+      el.style.cursor='grabbing';
+      startX = e.pageX;
+      scrollLeft = el.scrollLeft;
+    }, true);
+    function onMove(e){
+      if(!isDown) return;
+      const dx = e.pageX - startX;
+      if(Math.abs(dx) > 3) moved = true;
+      if(moved){
+        el.scrollLeft = scrollLeft - dx;
+        e.preventDefault();
+      }
+    }
+    function onUp(){
+      if(isDown){ isDown=false; el.style.cursor='grab'; }
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    // Evita que el "arrastre" dispare accidentalmente un click en pills/tabs
+    el.addEventListener('click', e=>{
+      if(moved){ e.stopPropagation(); e.preventDefault(); }
+    }, true);
+  }
+  function initAll(){
+    document.querySelectorAll(selectors.join(',')).forEach(initDragScroll);
+  }
+  document.addEventListener('DOMContentLoaded', initAll);
+  initAll();
+  setTimeout(initAll, 800);
+  setTimeout(initAll, 2000);
+  setTimeout(initAll, 5000);
+  // Observa el DOM por si se agregan carruseles nuevos más tarde
+  new MutationObserver(initAll).observe(document.body, {childList:true, subtree:true});
+})();
+
 </script>
 </body>
 </html>
